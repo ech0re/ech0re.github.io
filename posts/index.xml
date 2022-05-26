@@ -1,8 +1,8 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
-        <title>All Posts - Ech0.re</title>
+        <title>All Posts - Ech0 Security Blog</title>
         <link>https://www.ech0.re/posts/</link>
-        <description>All Posts | Ech0.re</description>
+        <description>All Posts | Ech0 Security Blog</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>me@ech0.re (Ech0)</managingEditor>
             <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Fri, 15 Apr 2022 18:39:15 &#43;0200</lastBuildDate><atom:link href="https://www.ech0.re/posts/" rel="self" type="application/rss+xml" /><item>
     <title>Packing: dropping from resources</title>

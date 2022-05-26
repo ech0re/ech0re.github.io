@@ -1,6 +1,6 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
-        <title>Ech0.re</title>
+        <title>Ech0 Security Blog</title>
         <link>https://www.ech0.re/</link>
         <description>Security blog</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>me@ech0.re (Ech0)</managingEditor>

@@ -1,8 +1,8 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
-        <title>Categories - Category - Ech0.re</title>
+        <title>Categories - Category - Ech0 Security Blog</title>
         <link>https://www.ech0.re/categories/</link>
-        <description>Categories - Category - Ech0.re</description>
+        <description>Categories - Category - Ech0 Security Blog</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>me@ech0.re (Ech0)</managingEditor>
             <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Fri, 15 Apr 2022 18:39:15 &#43;0200</lastBuildDate><atom:link href="https://www.ech0.re/categories/" rel="self" type="application/rss+xml" /><item>
     <title>Packer</title>
