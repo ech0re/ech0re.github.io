@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Packing: dropping from resources - Ech0.re</title><meta name="Description" content="Security blog"><meta property="og:title" content="Packing: dropping from resources" />
+<meta property="og:description" content="Warning  The knowledge acquired in this article is for strictly educational purposes.
+You are not allowed to use tools or techniques for malicious purposes: it is immoral and illegal.
+If you&rsquo;re not sure what you&rsquo;re doing, don&rsquo;t.
+I cannot be held responsible for any misuse you may make of this knowledge.
+   In this new series of articles &ldquo;packing&rdquo;, I will present to you various key technical points used by packers." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ech0.re/posts/packing-resources/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-04-15T18:39:15+02:00" />
+<meta property="article:modified_time" content="2022-04-15T18:39:15+02:00" /><meta property="og:site_name" content="Ech0.re" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Packing: dropping from resources"/>
+<meta name="twitter:description" content="Warning  The knowledge acquired in this article is for strictly educational purposes.
+You are not allowed to use tools or techniques for malicious purposes: it is immoral and illegal.
+If you&rsquo;re not sure what you&rsquo;re doing, don&rsquo;t.
+I cannot be held responsible for any misuse you may make of this knowledge.
+   In this new series of articles &ldquo;packing&rdquo;, I will present to you various key technical points used by packers."/>
+<meta name="application-name" content="Ech0.re">
+<meta name="apple-mobile-web-app-title" content="Ech0.re"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://ech0.re/posts/packing-resources/" /><link rel="prev" href="https://ech0.re/posts/kernel-module-development/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"></noscript><link rel="preload" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Packing: dropping from resources",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/ech0.re\/posts\/packing-resources\/"
+        },"genre": "posts","keywords": "packing, dropper, malware, windows","wordcount":  2204 ,
+        "url": "https:\/\/ech0.re\/posts\/packing-resources\/","datePublished": "2022-04-15T18:39:15+02:00","dateModified": "2022-04-15T18:39:15+02:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Ech0"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('light' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'light' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Ech0.re">Ech0.re</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> Posts </a><a class="menu-item" href="/tags/"> Tags </a><a class="menu-item" href="/categories/"> Categories </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Ech0.re">Ech0.re</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="">Posts</a><a class="menu-item" href="/tags/" title="">Tags</a><a class="menu-item" href="/categories/" title="">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Packing: dropping from resources</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-category">included in <a href="/categories/packer/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Packer</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2022-04-15">2022-04-15</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;2204 words&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;11 minutes&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-prerequisites">1. Prerequisites</a></li>
+    <li><a href="#2-vocabulary">2. Vocabulary</a></li>
+    <li><a href="#3-explanation-of-the-technique">3. Explanation of the technique</a></li>
+    <li><a href="#4-development">4. Development</a>
+      <ul>
+        <li><a href="#41-creation-of-the-secret-binary">4.1. Creation of the secret binary</a></li>
+        <li><a href="#42-generating-the-resource-with-windres">4.2. Generating the resource with Windres</a></li>
+        <li><a href="#43-writing-the-mini-unpacker">4.3. Writing the mini unpacker</a></li>
+      </ul>
+    </li>
+    <li><a href="#5-conclusion">5. Conclusion</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><div class="details admonition warning open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-exclamation-triangle fa-fw" aria-hidden="true"></i>Warning<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content"><p>The knowledge acquired in this article is for <strong>strictly educational purposes</strong>.</p>
+<p><strong>You are not allowed</strong> to use tools or techniques for malicious purposes: <strong>it is immoral and illegal</strong>.</p>
+<p><strong>If you&rsquo;re not sure what you&rsquo;re doing, don&rsquo;t.</strong></p>
+<p>I cannot be held responsible for any misuse you may make of this knowledge.</p>
+</div>
+        </div>
+    </div>
+<p>In this new series of articles &ldquo;packing&rdquo;, I will present to you various key technical points used by packers.</p>
+<p>Attention, here I do not intend to explain what a binary packer is, I will let you search on the internet.</p>
+<p>Throughout the series, I&rsquo;ll be talking about <strong>windows packer for PE file formats</strong> but <strong>I&rsquo;ll be compiling on Linux</strong>. Same, I won&rsquo;t explain the PE format in detail in this series: the <a href="https://en.wikipedia.org/wiki/Portable_Executable" target="_blank" rel="noopener noreffer">Wikipedia page</a> is very well done!</p>
+<p>For this first part, we will talk about compressing binaries in resources and then dropping them in memory from an unpacker.</p>
+<h2 id="1-prerequisites">1. Prerequisites</h2>
+<p>If you want to follow the development and test by yourself, there are a few prerequisites.</p>
+<ul>
+<li>Operating system running on a relatively recent <strong>Linux kernel</strong>.</li>
+<li>Usual <strong>development tools</strong> (gcc, make, &hellip;)</li>
+<li><strong>gcc-mingw</strong> and <strong>windres</strong> tools (<strong>gcc-mingw-w64-x86-64</strong> package for Ubuntu 20.04)</li>
+<li><strong>zlib1g-dev</strong> package</li>
+<li>A <strong>text editor</strong> (vim, VSCode, &hellip;)</li>
+</ul>
+<div class="details admonition note open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-pencil-alt fa-fw" aria-hidden="true"></i>Note<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">Unlike the manipulations of the kernel on the previous articles, here there is no risk for your system to compile and test the example which we are going to talk about.</div>
+        </div>
+    </div>
+<h2 id="2-vocabulary">2. Vocabulary</h2>
+<p>I will use a particular vocabulary in this article. Here are some examples :</p>
+<ul>
+<li>
+<p><strong>Binary</strong>: to designate a compiled object, for example an executable or a library.</p>
+</li>
+<li>
+<p><strong>Payload</strong>: to designate a piece of code or string of characters necessary and sufficient for the execution of an instruction suite in a process, often malicious.</p>
+</li>
+<li>
+<p><strong>Packing</strong>, <strong>unpacking</strong>: respectively the processes for encrypting/compressing/hiding or decrypting/decompressing/revealing a binary or a payload.</p>
+</li>
+<li>
+<p><strong>Packer</strong>, <strong>unpacker</strong>: respectively to designate the software (or actions) responsible for packing and unpacking a binary or a payload.</p>
+</li>
+</ul>
+<h2 id="3-explanation-of-the-technique">3. Explanation of the technique</h2>
+<p>Before starting to develop, an explanation of what we are going to talk about is needed.</p>
+<p>Some <strong>packers</strong> or <strong>malware</strong> will hide <em>secret</em> code within the executable itself that seems harmless at first glance. One of the techniques used for this is to store a payload or other executable directly in the <strong>resource section</strong> (<code>.rsrc</code>) of the executable. Often this secret binary will be <strong>encrypted and/or compressed</strong>.</p>
+<p>When the parent executable is run, this new executable will be decrypted in memory to be used in the rest of the unpacking process.</p>
+<p>We will see here how this storage and recovery of this secret binary works in practice.</p>
+<p>For this, we will hide a small binary in a main binary, in the resources section, then retrieve it and decrypt it in memory.</p>
+<h2 id="4-development">4. Development</h2>
+<p>The development phase will take place in two stages. First, we will create the small binary to hide, then the main binary which will take care of the unpacking. Attention, I will present here <strong>one</strong> method to do it, there are many others.</p>
+<p>Also, we&rsquo;ll be sticking to <strong>64-bit (PE32+)</strong> binaries for this article. Just know that the principle is the same for <strong>32 bits (PE32)</strong>.</p>
+<h3 id="41-creation-of-the-secret-binary">4.1. Creation of the secret binary</h3>
+<p>For the sake of this article, we&rsquo;re going to stick with something extremely simple. We don&rsquo;t want to create a malicious payload or do anything really big for the hidden binary since the point isn&rsquo;t what it will do, but it&rsquo;s good to know how we&rsquo;re going to hide it and how we&rsquo;re going to get it back.</p>
+<p>So here is the hidden binary. A simple program displaying &ldquo;Hello!&rdquo; on standard output.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;Hello !</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>We compile, and it&rsquo;s ready! You are free to test it on Windows if you wish.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ x86_64-w64-mingw32-gcc hidden.c -o hidden.exe
+</span></span><span class="line"><span class="cl">$ file hidden.exe
+</span></span><span class="line"><span class="cl">hidden.exe: PE32+ executable <span class="o">(</span>console<span class="o">)</span> x86-64, <span class="k">for</span> MS Windows
+</span></span></code></pre></div><h3 id="42-generating-the-resource-with-windres">4.2. Generating the resource with Windres</h3>
+<p>We will compress this <strong>hidden.exe</strong> binary and store it in resource format so that we can integrate it into a second binary as explained above.</p>
+<p><strong>Compression of the binary</strong></p>
+<p>In the example of this article, we will use <strong>Zlib</strong>&rsquo;s <a href="https://refspecs.linuxbase.org/LSB_3.0.0/LSB-Core-generic/LSB-Core-generic/zlib-compress2-1.html" target="_blank" rel="noopener noreffer">compress2()</a> function to compress our binary.</p>
+<p>Without further ado, here is the C code.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;zlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">ac</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">av</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">ac</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">printf</span><span class="p">(</span><span class="s">&#34;Usage: %s &lt;src_file&gt; &lt;size_of_file&gt;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">av</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="cm">/* input */</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">*</span><span class="n">clear_filename</span> <span class="o">=</span> <span class="n">av</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">src_size</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">av</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">*</span><span class="n">clear</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="n">src_size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="cm">/* output */</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">*</span><span class="n">compressed</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="n">src_size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">uLongf</span> <span class="n">dst_size</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="cm">/* reading and compression */</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">fd_rd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">clear_filename</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">read</span><span class="p">(</span><span class="n">fd_rd</span><span class="p">,</span> <span class="n">clear</span><span class="p">,</span> <span class="n">src_size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">close</span><span class="p">(</span><span class="n">fd_rd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">compress2</span><span class="p">((</span><span class="n">Bytef</span> <span class="o">*</span><span class="p">)</span><span class="n">compressed</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dst_size</span><span class="p">,</span> <span class="p">(</span><span class="n">Bytef</span> <span class="o">*</span><span class="p">)</span><span class="n">clear</span><span class="p">,</span> <span class="p">(</span><span class="n">uLong</span><span class="p">)</span><span class="n">src_size</span><span class="p">,</span> <span class="mi">9</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="cm">/* writing */</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">fd_wr</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">&#34;compressed_binary&#34;</span><span class="p">,</span> <span class="n">O_WRONLY</span> <span class="o">|</span> <span class="n">O_CREAT</span><span class="p">,</span> <span class="mo">0444</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">write</span><span class="p">(</span><span class="n">fd_wr</span><span class="p">,</span> <span class="n">compressed</span><span class="p">,</span> <span class="n">dst_size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">close</span><span class="p">(</span><span class="n">fd_wr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">EXIT_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><div class="details admonition info open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-info-circle fa-fw" aria-hidden="true"></i>Explanation<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content"><p>As usual, a small explanation is needed.</p>
+<ul>
+<li>
+<p><strong>Function prototype</strong></p>
+<ul>
+<li>
+<p>Our program takes two parameters: the name of the file to compress and its size in bytes</p>
+</li>
+<li>
+<p>We quickly check that the correct number of arguments has been passed.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>In user input</strong>, therefore, we have the file name <code>clear_filename</code> and the file size <code>src_size</code>, and we will also allocate memory in a <code>clear</code> pointer to store the file data in preparation for compression.</p>
+</li>
+<li>
+<p><strong>In output</strong>, we will have the compressed data stored in the <code>compressed</code> allocated pointer as well as the final size of the compressed file, stored in <code>dst_size</code>.</p>
+</li>
+<li>
+<p>We proceed to read the source file using the <code>open()</code> and <code>read()</code> system calls.</p>
+</li>
+<li>
+<p>We compress using <strong>Zlib</strong>&rsquo;s <code>compress2()</code> function, whose prototype is as follows: <code>int compress2(Bytef * dest, uLongf * destLen, const Bytef * source, uLong sourceLen, int level);</code></p>
+<ul>
+<li>
+<p><strong>dest</strong>: pointer where the compressed data will be stored.</p>
+</li>
+<li>
+<p><strong>destLen</strong>: pointer where the size of the compressed data in bytes will be stored.</p>
+</li>
+<li>
+<p><strong>source</strong>: pointer from where the data to be compressed will be read.</p>
+</li>
+<li>
+<p><strong>level</strong>: level of compression, 9 corresponding to the maximum level of compression.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Finally</strong>, we end up writing this compressed data to a new <strong>compressed_binary</strong> file.</p>
+</li>
+</ul>
+</div>
+        </div>
+    </div>
+<p><strong>Let&rsquo;s test this</strong>! (be sure to compile your program with the zlib library: <strong>-lz</strong>)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">gcc compress.c -o compress -lz
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">ls -l hidden.exe
+</span></span><span class="line"><span class="cl"><span class="c1"># -rwxrwxr-x 1 ech0 ech0 316853 avril 13 23:55 hidden.exe</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">./compress hidden.exe <span class="m">316853</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">file compressed_binary
+</span></span><span class="line"><span class="cl"><span class="c1"># compressed_binary: zlib compressed data</span>
+</span></span></code></pre></div><div class="details admonition success open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-check-circle fa-fw" aria-hidden="true"></i>Success<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">And it&rsquo;s a success, we managed to compress our <strong>hidden.exe</strong> binary with <strong>zlib</strong>, and we also note that its size has greatly decreased, going from <strong>316853</strong> to <strong>89766</strong> bytes. The original goal was not really to reduce the size, but rather to hide the binary in the resources.</div>
+        </div>
+    </div>
+<p>Obviously, at this point in a real case there would also be additional <strong>encryption</strong>, for example with a disposable mask also stored in the resources. But for this article we will settle for compression.</p>
+<p><strong>Creating resource config files</strong></p>
+<p>Now that our compressed binary is ready, we need to create a resource (<strong>.rc</strong>) file to tell <strong>Windres</strong> what to consider as a resource.</p>
+<p>Without further ado, here is the <strong>compressed_binary.rc</strong> file.</p>
+<pre tabindex="0"><code class="language-rc" data-lang="rc">IDR_RCDATA0 RCDATA compressed_binary
+</code></pre><div class="details admonition info open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-info-circle fa-fw" aria-hidden="true"></i>Explanation<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content"><p>A brief explanation of the syntax:</p>
+<ul>
+<li><strong>IDR_RCDATA0</strong>: resource name</li>
+<li><strong>RCDATA</strong>: resource type (here, data)</li>
+<li><strong>compressed_binary</strong>: name of the file to include as a resource</li>
+</ul>
+</div>
+        </div>
+    </div>
+<p>There you go, all that remains is to call Windres to generate the object file to include as a resource.</p>
+<p><strong>Generation of the final resource with Windres</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">x86_64-w64-mingw32-windres compressed_binary.rc -O coff -o compressed_binary.rc.o
+</span></span></code></pre></div><p>To briefly explain, we give <strong>windres</strong> our <strong>.rc</strong> file as input and we request an output <strong>coff file</strong> (windows object file).</p>
+<p>As a reminder and to avoid you getting lost, here is what our files look like.</p>
+<pre tabindex="0"><code>.
+├── compress
+├── compress.c
+├── compressed_binary
+├── compressed_binary.rc
+├── compressed_binary.rc.o
+├── hidden.c
+└── hidden.exe
+
+0 directories, 7 files
+</code></pre><p>The resource is ready, we now move on to the development of the mini unpacker itself. This will be responsible for retrieving the embedded resource itself, then decompressing it in memory. It is therefore to this unpacker that the resource that we have just generated will be integrated.</p>
+<h3 id="43-writing-the-mini-unpacker">4.3. Writing the mini unpacker</h3>
+<p>This time, just like for <strong>hidden.exe</strong>, we are talking about code that is supposed to run on a <strong>Windows environment</strong>, so we will compile a <strong>PE32+</strong> object.</p>
+<p><strong>Finding and extracting the resource</strong></p>
+<p>We will use the functions of the <strong>Windows API</strong>: <a href="https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-findresourcea" target="_blank" rel="noopener noreffer">FindResourceA</a>, <a href="https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadresource" target="_blank" rel="noopener noreffer">LoadResource</a> and <a href="https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-lockresource" target="_blank" rel="noopener noreffer">LockResource</a>. Exceptionally I will not spend time explaining them, since the <strong>Microsoft documentation is already complete</strong>.</p>
+<p>Here is the C code that will retrieve a resource from its own resource section (<code>.rsrc</code>).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;windows.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">HRSRC</span>	<span class="n">hRes</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">HGLOBAL</span>	<span class="n">hResLoad</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">PUCHAR</span>	<span class="n">Data</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">hRes</span> <span class="o">=</span> <span class="n">FindResourceA</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;IDR_RCDATA0&#34;</span><span class="p">,</span> <span class="n">RT_RCDATA</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">hResLoad</span> <span class="o">=</span> <span class="n">LoadResource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">hRes</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Data</span> <span class="o">=</span> <span class="n">LockResource</span><span class="p">(</span><span class="n">hResLoad</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>The code compiles correctly.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">x86_64-w64-mingw32-gcc depacker.c -o depacker.exe
+</span></span></code></pre></div><p>However, we did not include our resource in this binary, so searching for resource named &ldquo;<strong>IDR_RCDATA0</strong>&rdquo; can only fail. Moreover, we even notice that there is no <code>.rsrc</code> section in this binary:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ readpe -S depacker.exe <span class="p">|</span> grep <span class="s1">&#39;Name:&#39;</span>
+</span></span><span class="line"><span class="cl">        Name:                            .text
+</span></span><span class="line"><span class="cl">        Name:                            .data
+</span></span><span class="line"><span class="cl">        Name:                            .rdata
+</span></span><span class="line"><span class="cl">        Name:                            .pdata
+</span></span><span class="line"><span class="cl">        Name:                            .xdata
+</span></span><span class="line"><span class="cl">        Name:                            .bss
+</span></span><span class="line"><span class="cl">        Name:                            .idata
+</span></span><span class="line"><span class="cl">        Name:                            .CRT
+</span></span><span class="line"><span class="cl">        Name:                            .tls
+</span></span></code></pre></div><p>We&rsquo;ll fix this small detail by including our <strong>resource&rsquo;s object file</strong> in the compilation command line:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ x86_64-w64-mingw32-gcc depacker.c compressed_binary.rc.o -o depacker.exe
+</span></span><span class="line"><span class="cl">$ readpe -S depacker.exe <span class="p">|</span> grep <span class="s1">&#39;Name:&#39;</span>
+</span></span><span class="line"><span class="cl">        Name:                            .text
+</span></span><span class="line"><span class="cl">        Name:                            .data
+</span></span><span class="line"><span class="cl">        Name:                            .rdata
+</span></span><span class="line"><span class="cl">        Name:                            .pdata
+</span></span><span class="line"><span class="cl">        Name:                            .xdata
+</span></span><span class="line"><span class="cl">        Name:                            .bss
+</span></span><span class="line"><span class="cl">        Name:                            .idata
+</span></span><span class="line"><span class="cl">        Name:                            .CRT
+</span></span><span class="line"><span class="cl">        Name:                            .tls
+</span></span><span class="line"><span class="cl">        Name:                            .rsrc
+</span></span></code></pre></div><div class="details admonition success open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-check-circle fa-fw" aria-hidden="true"></i>Success<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content"><p>Now the <code>.rsrc</code> section appears fine, and normally contains our resource (the little compressed <strong>hidden.exe</strong> binary, if you&rsquo;ve been following).</p>
+<p>We now have code on the unpacking side that is able to extract this resource and store it in memory. However, we still have to <strong>decompress</strong> it if we want to use it.</p>
+</div>
+        </div>
+    </div>
+<p><strong>Unpacking the hidden binary in memory</strong></p>
+<p>To unpack the binary, we need the following elements:</p>
+<ul>
+<li>The compressed data</li>
+<li>The size of the compressed data</li>
+<li>The size of the decompressed data to make the dynamic allocation of the buffer</li>
+<li>A decompression function</li>
+</ul>
+<p>We have it all! Well almost… We are missing <strong>the size of the compressed and decompressed data</strong>. Of course we know it, but it must be indicated to the unpacking program: <strong>we&rsquo;ll just hard-code it</strong>.</p>
+<div class="details admonition tip open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-lightbulb fa-fw" aria-hidden="true"></i>Tip<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">For the example in this article, we&rsquo;ll just hard-code it, but be aware that it&rsquo;s entirely possible, for example, to include this size in a second resource (e.g. <strong>IDR_RCDATA1</strong>) in exactly the same way we included the compressed binary. Thus, <strong>it would be enough for the unpacker to recover this second resource</strong> to have the size of the first compressed and decompressed resource.</div>
+        </div>
+    </div>
+<p>At this point, we will also need the <strong>zlib</strong> library for Windows, which we get and compile like follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">wget http://zlib.net/zlib-1.2.12.tar.gz
+</span></span><span class="line"><span class="cl">tar xf zlib-1.2.12.tar.gz
+</span></span><span class="line"><span class="cl">rm zlib-1.2.12.tar.gz
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> zlib-1.2.12
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Affect PREFIX = x86_64-w64-mingw32-</span>
+</span></span><span class="line"><span class="cl">vim win32/Makefile.gcc
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Cross-Compilation of zlib via mingw</span>
+</span></span><span class="line"><span class="cl"><span class="nv">BINARY_PATH</span><span class="o">=</span>/usr/x86_64-w64-mingw32/bin <span class="nv">INCLUDE_PATH</span><span class="o">=</span>/usr/x86_64-w64-mingw32/include <span class="nv">LIBRARY_PATH</span><span class="o">=</span>/usr/x86_64-w64-mingw32/lib make -f win32/Makefile.gcc
+</span></span></code></pre></div><div class="details admonition tip open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-lightbulb fa-fw" aria-hidden="true"></i>Tip<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">We just cross-compiled <strong>zlib</strong> for <strong>Windows</strong> via <strong>mingw</strong>, on a <strong>Linux</strong> machine. This kind of stuff can be done in many other cases, you don&rsquo;t actually need Windows to compile for Windows.</div>
+        </div>
+    </div>
+<p>We can therefore now compile our final code <strong>depacker.c</strong> which will recover the resource in memory and decompress it.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;windows.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;zlib.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">HRSRC</span>	<span class="n">hRes</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">HGLOBAL</span>	<span class="n">hResLoad</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">PUCHAR</span>	<span class="n">Data</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">PUCHAR</span> <span class="n">uncompressed</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">ULONG</span> <span class="n">src_size</span> <span class="o">=</span> <span class="mi">89766</span><span class="p">;</span> <span class="c1">// Hard-coded size of compressed binary
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">ULONG</span> <span class="n">dst_size</span> <span class="o">=</span> <span class="mi">316853</span><span class="p">;</span> <span class="c1">// Hard-coded size of decompressed binary
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="n">hRes</span> <span class="o">=</span> <span class="n">FindResourceA</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;IDR_RCDATA0&#34;</span><span class="p">,</span> <span class="n">RT_RCDATA</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">hResLoad</span> <span class="o">=</span> <span class="n">LoadResource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">hRes</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Data</span> <span class="o">=</span> <span class="n">LockResource</span><span class="p">(</span><span class="n">hResLoad</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">uncompressed</span> <span class="o">=</span> <span class="p">(</span><span class="n">PUCHAR</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">dst_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">	<span class="n">uncompress</span><span class="p">(</span><span class="n">uncompressed</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dst_size</span><span class="p">,</span> <span class="n">Data</span><span class="p">,</span> <span class="n">src_size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>The principle of the <code>uncompress()</code> function is exactly the same at the prototype level as for the <code>compress2()</code> function initially used.</p>
+<p>We compile to check. We obviously do not forget to specify the location of our <strong>zlib</strong> library (<code>-L</code>) and to reference it (<code>-lz</code>), as well as the header files (<code>-I</code>)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">x86_64-w64-mingw32-gcc depacker.c compressed_binary.rc.o -o depacker.exe -L./zlib-1.2.12/ -lz -I zlib-1.2.12/
+</span></span></code></pre></div><div class="details admonition success open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-check-circle fa-fw" aria-hidden="true"></i>Success<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">There you go, our unpacker is finally ready. You can test it in a <strong>Windows environment</strong>.</div>
+        </div>
+    </div>
+<h2 id="5-conclusion">5. Conclusion</h2>
+<p>Obviously, as it is, our unpacker is useless. It just grabs the binary and unpacks it into memory, <strong>it doesn&rsquo;t run it</strong>.</p>
+<p>Ultimately, the goal is obviously to <strong>execute this new binary</strong>, and this is called <strong>dropping</strong>, performed by a <strong>dropper</strong> (here, our unpacker).</p>
+<p>There are several ways to do this, for example <strong>writing it to disk</strong> and then executing it quite stupidly, or <strong>loading it directly into memory</strong>, doing <strong>DLL injection</strong>, <strong>process hollowing</strong>, etc.</p>
+<div class="details admonition info open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-info-circle fa-fw" aria-hidden="true"></i>Info<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">We will cover this next part in a future article, to see how we can <strong>intelligently run</strong> this decrypted binary on the Windows environment.</div>
+        </div>
+    </div>
+<p>Also be careful, what I have described in this article is <strong>one</strong> way of doing things. Indeed, storing the hidden binary in resources <strong>is not always the best way to do</strong>. Sometimes the binary will be stored in the resources as we did, but sometimes it will be stored in a separate section, or even <strong>split into several parts in several different sections</strong>&hellip; Or simply retrieved from the internet via a <strong>network connection</strong>.</p>
+<p>In short, it should be remembered that the principle of the dropper is globally the same, but the source of the hidden binary or the payload may vary depending on the packers you are dealing with. Here, I chose the example of storage in resources because it is something that is quite close to reality.</p>
+<p>Thank you for reading.</p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2022-04-15</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://ech0.re/posts/packing-resources/" data-title="Packing: dropping from resources" data-via="ech0fr" data-hashtags="packing,dropper,malware,windows"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://ech0.re/posts/packing-resources/"><i class="fab fa-linkedin fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://ech0.re/posts/packing-resources/"><i class="fab fa-reddit fa-fw" aria-hidden="true"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/packing/">packing</a>,&nbsp;<a href="/tags/dropper/">dropper</a>,&nbsp;<a href="/tags/malware/">malware</a>,&nbsp;<a href="/tags/windows/">windows</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/kernel-module-development/" class="prev" rel="prev" title="Kernel-Land: Module development"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Kernel-Land: Module development</a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://ech0.re" target="_blank">Ech0</a></span>&nbsp;|&nbsp;<span class="license">me@ech0.re</span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

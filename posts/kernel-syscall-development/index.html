@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Kernel-Land: System call development - Ech0.re</title><meta name="Description" content="Security blog"><meta property="og:title" content="Kernel-Land: System call development" />
+<meta property="og:description" content="In this article we will see how to:
+ Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land  In other terms: we will add our own syscall to the Linux kernel.
+1. Prerequisites If you want to follow the development and test by yourself, there are a few prerequisites.
+ Operating system running on a relatively recent Linux kernel." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ech0.re/posts/kernel-syscall-development/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-03-25T00:07:09+02:00" />
+<meta property="article:modified_time" content="2022-03-25T00:07:09+02:00" /><meta property="og:site_name" content="Ech0.re" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Kernel-Land: System call development"/>
+<meta name="twitter:description" content="In this article we will see how to:
+ Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land  In other terms: we will add our own syscall to the Linux kernel.
+1. Prerequisites If you want to follow the development and test by yourself, there are a few prerequisites.
+ Operating system running on a relatively recent Linux kernel."/>
+<meta name="application-name" content="Ech0.re">
+<meta name="apple-mobile-web-app-title" content="Ech0.re"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://ech0.re/posts/kernel-syscall-development/" /><link rel="next" href="https://ech0.re/posts/kernel-module-development/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"></noscript><link rel="preload" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Kernel-Land: System call development",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/ech0.re\/posts\/kernel-syscall-development\/"
+        },"genre": "posts","keywords": "kernel-land, syscall, development, linux","wordcount":  2602 ,
+        "url": "https:\/\/ech0.re\/posts\/kernel-syscall-development\/","datePublished": "2022-03-25T00:07:09+02:00","dateModified": "2022-03-25T00:07:09+02:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Ech0"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('light' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'light' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Ech0.re">Ech0.re</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> Posts </a><a class="menu-item" href="/tags/"> Tags </a><a class="menu-item" href="/categories/"> Categories </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Ech0.re">Ech0.re</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="">Posts</a><a class="menu-item" href="/tags/" title="">Tags</a><a class="menu-item" href="/categories/" title="">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Kernel-Land: System call development</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-category">included in <a href="/categories/linux-kernel/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Linux kernel</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2022-03-25">2022-03-25</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;2602 words&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;13 minutes&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-prerequisites">1. Prerequisites</a></li>
+    <li><a href="#2-preparing-the-field">2. Preparing the field</a>
+      <ul>
+        <li><a href="#21-on-a-linux-vm-recommended">2.1. On a Linux VM (recommended)</a></li>
+        <li><a href="#22-on-your-native-system-not-recommended">2.2. On your native system (not recommended)</a></li>
+        <li><a href="#23-conclusion-of-field-preparation">2.3. Conclusion of field preparation</a></li>
+      </ul>
+    </li>
+    <li><a href="#3-system-call-development">3. System call development</a>
+      <ul>
+        <li><a href="#31-files-structure">3.1. Files structure</a></li>
+        <li><a href="#32-writing-the-code">3.2. Writing the code</a></li>
+      </ul>
+    </li>
+    <li><a href="#4-system-call-export">4. System call export</a></li>
+    <li><a href="#5-system-call-compilation">5. System call compilation</a></li>
+    <li><a href="#6-execution-and-testing">6. Execution and testing</a></li>
+    <li><a href="#7-conclusion-of-the-article">7. Conclusion of the article</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>In this article we will see how to:</p>
+<ul>
+<li>Develop a syscall in C</li>
+<li>Compile it with the Linux kernel</li>
+<li>Charge it in the syscalls table</li>
+<li>Call it from user-land</li>
+</ul>
+<p>In other terms: we will add our own syscall to the Linux kernel.</p>
+<h2 id="1-prerequisites">1. Prerequisites</h2>
+<p>If you want to follow the development and test by yourself, there are a few prerequisites.</p>
+<ul>
+<li>Operating system running on a relatively recent <strong>Linux kernel</strong>.</li>
+<li>Usual <strong>development tools</strong> (gcc, make, &hellip;)</li>
+<li>A <strong>text editor</strong> (vim, VSCode, &hellip;)</li>
+</ul>
+<div class="details admonition warning open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-exclamation-triangle fa-fw" aria-hidden="true"></i>Warning<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">In order to test the system call we will recompile the current Linux kernel and boot on it. If you don&rsquo;t know what you&rsquo;re doing, don&rsquo;t! At the risk of no longer being able to boot a kernel on your machine. That said, you can still follow the development without compiling. <strong>The best is to go through a VM</strong>, without altering your native system!</div>
+        </div>
+    </div>
+<h2 id="2-preparing-the-field">2. Preparing the field</h2>
+<div class="details admonition info open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-info-circle fa-fw" aria-hidden="true"></i>Info<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">If you don&rsquo;t want to compile and test the code, you can skip this step. Take into account that the compilation of the kernel can be very long…</div>
+        </div>
+    </div>
+<p>Before starting to develop, we will have to prepare our environment a little. We will act differently depending on whether you are on a VM or your native system. I strongly recommend you to do these manipulations on a Linux VM.</p>
+<h3 id="21-on-a-linux-vm-recommended">2.1. On a Linux VM (recommended)</h3>
+<p>For this article, I downloaded an <a href="https://ubuntu.com/download" target="_blank" rel="noopener noreffer">Ubuntu Server 20.04.4 ISO</a> from the official website and installed it in a Virtual Box VM. You can choose the distribution, version or emulator/hypervisor you want, but you may have some differences with what I will show next.</p>
+<p>I configured the VM with <strong>bridged network</strong> access, <strong>4 GB</strong> of RAM, and I connect to it by SSH to work.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">ech0@host$ ssh ech0@192.168.0.42
+</span></span><span class="line"><span class="cl">ech0@ubuntu-vm:~$
+</span></span></code></pre></div><p>At this stage, I recommend that you turn off your virtual machine and take a <strong>snapshot</strong>, in case you break your bootloader during the manipulations, so that you don&rsquo;t have to reinstall your VM. I&rsquo;ll let you search on the internet how to do it, but it&rsquo;s quite intuitive.</p>
+<p>By default, Linux distributions do not ship kernel source code, only headers and object files. You must install the <strong>linux-source</strong> package from APT in order to have the current kernel sources. Then, you will have to unarchive the installed archive in order to have access to the directory containing the sources. Personally, I am on the Linux kernel 5.4.0 (you can check it with the command <code>uname -r</code>).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">sudo apt install linux-source
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /usr/src/linux-source-5.4.0
+</span></span><span class="line"><span class="cl">sudo bunzip2 linux-source-5.4.0.tar.bz2
+</span></span><span class="line"><span class="cl">sudo tar xf linux-source-5.4.0.tar
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> linux-source-5.4.0/
+</span></span></code></pre></div><p>You just need the kernel configuration to compile it, we will generate a default and minimalist one.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">sudo make defconfig
+</span></span></code></pre></div><div class="details admonition tip open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-lightbulb fa-fw" aria-hidden="true"></i>Tip<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">You will need the <strong>flex</strong>, <strong>bison</strong>, <strong>libelf-dev</strong> and <strong>libssl-dev</strong> packages to compile the kernel later. These packages are to be installed in the classic way through APT.</div>
+        </div>
+    </div>
+<h3 id="22-on-your-native-system-not-recommended">2.2. On your native system (not recommended)</h3>
+<p>For security reasons we will not modify the Linux kernel on which our system is currently booted&hellip; It would be quite irresponsible to alter and overwrite stable code for this demo.</p>
+<p>For this reason we will clone the official Linux kernel git directory and work on a &ldquo;dirty&rdquo; version.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+</span></span></code></pre></div><p>We will then switch to the latest stable version deployed with our distribution, i.e. <strong>5.13</strong> at the time of writing this article on <strong>Ubuntu focal</strong>. (check your version with the <code>uname -r</code> command).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nb">cd</span> linux
+</span></span><span class="line"><span class="cl">git checkout v5.13
+</span></span></code></pre></div><p>On this branch, we are going to prepare the kernel configuration and we have <strong>two options</strong> for that.</p>
+<div class="details admonition tip open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-lightbulb fa-fw" aria-hidden="true"></i>Tip<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">You will need the <strong>flex</strong>, <strong>bison</strong>, <strong>libelf-dev</strong> and <strong>libssl-dev</strong> packages (to be installed in the classic way through APT).</div>
+        </div>
+    </div>
+<p><strong>Option 1 (recommended): generation of a minimal configuration</strong></p>
+<p>As a first option, we will generate a minimal configuration. Indeed, we don&rsquo;t really need to have a working operating system just to test our Linux system call. For example, we do not need KVM, touchpad, touchscreen, camera/microphone etc.</p>
+<p>The advantage of this option is also to be able to compile the kernel <em>relatively</em> quickly and to have a <em>relatively</em> light image. I recommend this option for this exercise.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">make defconfig
+</span></span></code></pre></div><div class="details admonition warning open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-exclamation-triangle fa-fw" aria-hidden="true"></i>Warning<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">If your hard disk is encrypted via cryptsetup, you will have to activate an option which is not present by default on the minimal version: <strong>DM_CRYPT</strong>. To do this, you can type the command <code>make menuconfig</code> and activate the option named &ldquo;Crypt target support&rdquo; (or search for <strong>DM_CRYPT</strong> to find it). This is necessary to be able to decrypt your disk after booting to the new kernel.</div>
+        </div>
+    </div>
+<p><strong>Option 2: copy the current configuration</strong></p>
+<p>As a second option we will take the configuration of the kernel on which we are currently booted. The advantage of this option is that it will allow us to obtain a <strong>functional operating system</strong> with all its characteristics. But the compilation will be <strong>very long</strong> (&gt; 1h30) and the result <strong>very heavy</strong> (&gt; 10 GB).</p>
+<p>If there are variables to specify, leave the default values (enter key).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">make oldconfig
+</span></span></code></pre></div><p>Finally, to avoid compilation errors, open the generated <strong>.config</strong> file with a text editor and assign the <strong>CONFIG_SYSTEM_TRUSTED_KEYS</strong> and <strong>CONFIG_SYSTEM_REVOCATION_KEYS</strong> variables to an empty string (&quot;&quot;), this way:</p>
+<pre tabindex="0"><code>CONFIG_SYSTEM_TRUSTED_KEYS=&#34;&#34;
+CONFIG_SYSTEM_REVOCATION_KEYS=&#34;&#34;
+</code></pre><h3 id="23-conclusion-of-field-preparation">2.3. Conclusion of field preparation</h3>
+<p>And there you go! Our working environment is ready and we can start developing our system call. Please note that it is this new Linux kernel that we will compile and boot on, and not the kernel already installed with our distribution!</p>
+<div class="details admonition warning open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-exclamation-triangle fa-fw" aria-hidden="true"></i>Warning<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">If you have <strong>Secure Boot</strong> enabled in your BIOS and you are working on your native system, you will not be able to boot into the newly compiled kernel without generating a signature for it. I will not explain this step in this article since that is not the purpose here, you will find the needed information on the internet.</div>
+        </div>
+    </div>
+<h2 id="3-system-call-development">3. System call development</h2>
+<p>Like any system call, it must have a specific purpose, take arguments and return something. We are not going to do something very complicated but still more interesting than a simple &ldquo;hello world&rdquo;.</p>
+<p>In short, our system call will take a process ID (PID) as a parameter and return a whole bunch of information about it.</p>
+<p>Basically, a system call (like <em>open</em>, <em>write</em>, <em>read</em>…) is nothing but a function (or series of functions) in ring 0 (kernel-land). We use the term system call if this function can be called from the user-land.</p>
+<p>We will therefore first develop a simple function in the kernel without worrying about the fact that it must be called from the user-land.</p>
+<h3 id="31-files-structure">3.1. Files structure</h3>
+<p>At the root of our Linux kernel sources, we will create a new folder that will contain the sources of our system call, which we will call <strong>&ldquo;infopid&rdquo;</strong>. We will directly create the <strong>infopid.c</strong>, <strong>infopid.h</strong> and <strong>Makefile</strong> files there, respectively the <strong>source code</strong>, <strong>header</strong> and <strong>compilation</strong> files.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ tree infopid/
+</span></span><span class="line"><span class="cl">infopid/
+</span></span><span class="line"><span class="cl">├── Makefile
+</span></span><span class="line"><span class="cl">├── infopid.c
+</span></span><span class="line"><span class="cl">└── infopid.h
+</span></span><span class="line"><span class="cl"><span class="m">0</span> directories, <span class="m">3</span> files
+</span></span></code></pre></div><h3 id="32-writing-the-code">3.2. Writing the code</h3>
+<p>We will start by writing the <strong>infopid.h</strong> header file which will contain the structure containing the data that we will return to the user. Explanations are in the comments.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#ifndef INFOPID_H
+</span></span></span><span class="line"><span class="cl"><span class="cp">#define INFOPID_H
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/sched.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/limits.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/kernel.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/init.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/fs_struct.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/slab.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * pid: pid of process
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * name: name of the process
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * state: unrunnable, runnable, stopped
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * stack: pointer to the beginning of process&#39;s stack
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * age: birth time in nanoseconds
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * child: array of all child processes pid
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * ppid: parent process id
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * root: root path of process
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * pwd: working directory of process
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">info_pid</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">pid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">name</span><span class="p">[</span><span class="n">TASK_COMM_LEN</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">state</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="o">*</span><span class="n">stack</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">uint64_t</span> <span class="n">age</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">child</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">ppid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">root</span><span class="p">[</span><span class="n">PATH_MAX</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">pwd</span><span class="p">[</span><span class="n">PATH_MAX</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span></code></pre></div><p>Then we write the C code and the <strong>sys_infopid</strong> function which will fill this structure and return it to the user in user-land.</p>
+<div class="details admonition info open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-info-circle fa-fw" aria-hidden="true"></i>Info<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">Attention, it is important here to use the <strong>SYSCALL_DEFINE2</strong> macro to define our system call with two parameters. You will also notice the special layout of the arguments and their types, which are actually separated by commas.</div>
+        </div>
+    </div>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;infopid.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/syscalls.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">SYSCALL_DEFINE2</span><span class="p">(</span><span class="n">infopid</span><span class="p">,</span> <span class="k">struct</span> <span class="n">info_pid</span> <span class="o">*</span><span class="p">,</span> <span class="n">ret_pid</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="n">pid</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">struct</span> <span class="n">task_struct</span> <span class="o">*</span><span class="n">cur</span><span class="p">,</span> <span class="o">*</span><span class="n">child</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">struct</span> <span class="n">info_pid</span> <span class="o">*</span><span class="n">new</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">struct</span> <span class="n">path</span> <span class="n">root</span><span class="p">,</span> <span class="n">pwd</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">struct</span> <span class="n">pid</span> <span class="o">*</span><span class="n">spid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">*</span><span class="n">tmp</span><span class="p">,</span> <span class="n">buffer</span><span class="p">[</span><span class="n">PATH_MAX</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">spid</span> <span class="o">=</span> <span class="n">find_get_pid</span><span class="p">(</span><span class="n">pid</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">ESRCH</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">cur</span> <span class="o">=</span> <span class="n">pid_task</span><span class="p">(</span><span class="n">spid</span><span class="p">,</span> <span class="n">PIDTYPE_PID</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">cur</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">ESRCH</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">new</span> <span class="o">=</span> <span class="n">kmalloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">info_pid</span><span class="p">),</span> <span class="n">GFP_KERNEL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">new</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">ENOMEM</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">memset</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">child</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">256</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">pid_t</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">	<span class="n">get_fs_root</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">fs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">root</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">get_fs_pwd</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">fs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">pwd</span><span class="p">);</span>	
+</span></span><span class="line"><span class="cl">	<span class="n">get_task_comm</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span> <span class="n">cur</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">pid</span> <span class="o">=</span> <span class="n">task_pid_nr</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">state</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">state</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">stack</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">stack</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">age</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">start_time</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">list_for_each_entry</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">,</span> <span class="n">sibling</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">255</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">new</span><span class="o">-&gt;</span><span class="n">child</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">child</span><span class="o">-&gt;</span><span class="n">pid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nl">out</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">ppid</span> <span class="o">=</span> <span class="n">task_pid_nr</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">parent</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">spin_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">root</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">tmp</span> <span class="o">=</span> <span class="n">dentry_path_raw</span><span class="p">(</span><span class="n">root</span><span class="p">.</span><span class="n">dentry</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">PATH_MAX</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">strcpy</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">root</span><span class="p">,</span> <span class="n">tmp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">spin_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">root</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="n">spin_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pwd</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">tmp</span> <span class="o">=</span> <span class="n">dentry_path_raw</span><span class="p">(</span><span class="n">pwd</span><span class="p">.</span><span class="n">dentry</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">PATH_MAX</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">strcpy</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">pwd</span><span class="p">,</span> <span class="n">tmp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">spin_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pwd</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">copy_to_user</span><span class="p">(</span><span class="n">ret_pid</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">info_pid</span><span class="p">)))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">kfree</span><span class="p">(</span><span class="n">new</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">ESRCH</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="n">kfree</span><span class="p">(</span><span class="n">new</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>And finally, a very simple <strong>Makefile</strong> which will simply reference the file to compile.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="nv">obj-y</span> <span class="o">:=</span> infopid.o
+</span></span></code></pre></div><h2 id="4-system-call-export">4. System call export</h2>
+<p>However in order to test our system call we need to make some changes to the kernel itself. First we need to tell the kernel Makefile that our file exists and that it should compile it. To do this, we will modify the concatenation of the <strong>core-y</strong> variable in the <strong>kernel Makefile</strong> by adding our folder to it.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="nv">core-y</span> <span class="o">+=</span> kernel/ certs/ mm/ fs/ ipc/ security/ crypto/ block/ infopid/
+</span></span></code></pre></div><p>Then we must modify the file <strong>include/linux/syscalls.h</strong> containing the prototypes of the kernel system calls, to add our function there (obviously respect your own path, don&rsquo;t copy paste mine).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cm">/* Other declarations */</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;/usr/src/linux-source-5.4.0/linux-source-5.4.0/infopid/infopid.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="n">asmlinkage</span> <span class="kt">long</span> <span class="nf">sys_infopid</span><span class="p">(</span><span class="k">struct</span> <span class="n">info_pid</span> <span class="o">*</span><span class="p">,</span> <span class="kt">int</span><span class="p">);</span>
+</span></span></code></pre></div><p>Finally, we are going to modify the <strong>arch/x86/entry/syscalls/syscall_64.tbl</strong> file in order to add our system call to it, taking care to place it in the last position with the correct index incremented by +1 compared to the other system calls by respecting the nomenclature.</p>
+<pre tabindex="0"><code># Index  Arch  Name     Entrypoint
+  335    64    infopid  __x64_sys_infopid
+</code></pre><h2 id="5-system-call-compilation">5. System call compilation</h2>
+<p>Now that we have developed our function and exported it as a kernel-level system call, we can start the full kernel compilation. We therefore return to the root of the kernel sources, and run the <code>make</code> command.</p>
+<p>If you have several <strong>physical CPU cores</strong> on your machine or on your VM, do not hesitate to use the <strong>-j &lt;number_of_cores&gt;</strong> option in order to speed up the compilation since it can take quite a long time depending on the performance of your machine (especially if you are in a VM).</p>
+<p>Once the compilation is complete, you will need to install the kernel because we are going to boot on it!</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">sudo make
+</span></span><span class="line"><span class="cl">sudo make modules_install
+</span></span><span class="line"><span class="cl">sudo make install
+</span></span></code></pre></div><p>Now that the kernel has been compiled and installed, you need to make sure that you are going to boot into the new kernel on the next reboot.</p>
+<p>In my case, the new kernel is version <strong>5.4.174</strong>, which for <strong>grub</strong> is superior to the generic version <strong>5.4.0-105</strong> and will therefore automatically put it in first priority and will boot on it without any action from me. However if this is not your case you will need the grub menu to be able to choose the new version, and for that you must modify the <strong>/etc/default/grub</strong> file:</p>
+<pre tabindex="0"><code class="language-conf" data-lang="conf">#GRUB_TIMEOUT_STYLE=hidden
+GRUB_TIMEOUT=4
+</code></pre><p>Concretely, you must comment out the <strong>GRUB_TIMEOUT_STYLE</strong> variable and make sure that the <strong>GRUB_TIMEOUT</strong> is high enough (in seconds) to allow you to choose another entry in the grub menu. Don&rsquo;t forget to run the <code>sudo update-grub</code> command after your changes.</p>
+<p>I therefore suggest that you now restart the machine and test our system call!</p>
+<h2 id="6-execution-and-testing">6. Execution and testing</h2>
+<p>Immediately after the restart we check that we are indeed on the correct version of the kernel:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ uname -r
+</span></span><span class="line"><span class="cl">5.4.174
+</span></span></code></pre></div><p>Then we just have to write a little code in C which will call our system call by giving it a PID as an argument, and will display the returned information.</p>
+<p>As we saw earlier, our system call takes <strong>two parameters</strong>: a structure that will be filled in and returned to user-land via the <code>copy_to_user()</code> function, and a PID of the process for which we are requesting the information.</p>
+<p>I therefore propose the C code below which we will name <strong>test_infopid.c</strong>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/syscall.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;inttypes.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#define TASK_COMM_LEN 16
+</span></span></span><span class="line"><span class="cl"><span class="cp">#define PATH_MAX 4096
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">info_pid</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">pid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">name</span><span class="p">[</span><span class="n">TASK_COMM_LEN</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">state</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="o">*</span><span class="n">stack</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">uint64_t</span> <span class="n">age</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">child</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">ppid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">root</span><span class="p">[</span><span class="n">PATH_MAX</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">pwd</span><span class="p">[</span><span class="n">PATH_MAX</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">print_parents</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">pid</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">struct</span> <span class="n">info_pid</span> <span class="n">new</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">static</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\t</span><span class="s">Parent %d : %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">index</span><span class="o">++</span><span class="p">,</span> <span class="n">pid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">pid</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">syscall</span><span class="p">(</span><span class="mi">335</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">new</span><span class="p">,</span> <span class="n">pid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;syscall failed...</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="n">perror</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="n">print_parents</span><span class="p">(</span><span class="n">new</span><span class="p">.</span><span class="n">ppid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">ac</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">av</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">pid_t</span> <span class="n">pid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">struct</span> <span class="n">info_pid</span> <span class="n">new</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">new</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">new</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="p">.</span><span class="n">age</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">ac</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="n">pid</span> <span class="o">=</span> <span class="n">getpid</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">	<span class="k">else</span>
+</span></span><span class="line"><span class="cl">		<span class="n">pid</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">av</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">syscall</span><span class="p">(</span><span class="mi">335</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">new</span><span class="p">,</span> <span class="n">pid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">printf</span><span class="p">(</span><span class="s">&#34;syscall failed...</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="n">perror</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;Printing struct info_pid...</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;PID       : %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">pid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Name      : %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;State     : %ld</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">state</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Stack     : %p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">stack</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Birthtime : %ld</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">age</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">255</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">new</span><span class="p">.</span><span class="n">child</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\t</span><span class="s">Child %d  : %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">child</span><span class="p">[</span><span class="n">j</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="n">print_parents</span><span class="p">(</span><span class="n">new</span><span class="p">.</span><span class="n">ppid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;Root      : %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">root</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;PWD       : %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">pwd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">EXIT_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>You&rsquo;ll notice that we use the <code>syscall()</code> function specifying the <strong>index of our system call</strong>, since we don&rsquo;t have a wrapper in <strong>libc</strong> to call it in more conventional ways (such as <code>open()</code>, <code>read()</code>, etc.).</p>
+<p>The code is relatively simple: we call our function for a given process id (PID), and we display a lot of information about this process, including child and parent processes.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">gcc test_infopid.c -o test_infopid
+</span></span><span class="line"><span class="cl">./test_infopid <span class="c1"># With its own PID by default</span>
+</span></span></code></pre></div><pre tabindex="0"><code>Printing struct info_pid...
+PID       : 1354
+Name      : test_infopid
+State     : 0
+Stack     : 0xffffb76ac0750000
+Birthtime : 1203877852032
+	Parent 0 : 776
+	Parent 1 : 775
+	Parent 2 : 656
+	Parent 3 : 551
+	Parent 4 : 1
+	Parent 5 : 0
+Root      : /
+PWD       : /home/ech0
+</code></pre><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">./test_infopid <span class="m">1</span> <span class="c1"># With PID 1</span>
+</span></span></code></pre></div><pre tabindex="0"><code>Printing struct info_pid...
+PID       : 1
+Name      : systemd
+State     : 1
+Stack     : 0xffffb76ac0010000
+Birthtime : 15000000
+	Child 0  : 290
+	Child 1  : 317
+	Child 2  : 500
+	Child 3  : 509
+	Child 4  : 511
+	Child 5  : 523
+	Child 6  : 526
+	Child 7  : 527
+	Child 8  : 533
+	Child 9  : 535
+	Child 10  : 538
+	Child 11  : 541
+	Child 12  : 543
+	Child 13  : 544
+	Child 14  : 551
+	Child 15  : 570
+	Child 16  : 573
+	Child 17  : 579
+	Child 18  : 659
+	Parent 0 : 0
+Root      : /
+PWD       : /
+</code></pre><div class="details admonition success open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-check-circle fa-fw" aria-hidden="true"></i>Success<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">Our system call seems to be working fine.</div>
+        </div>
+    </div>
+<h2 id="7-conclusion-of-the-article">7. Conclusion of the article</h2>
+<p>That&rsquo;s it, it&rsquo;s already finished, you now know how to integrate a system call into the Linux kernel and how to call it.</p>
+<p>I did not go into the details of the system call code itself, which is not very important in this article since it only serves as an example, it could have been any other code. The goal was mainly to show you how the integration of a system call is done in the kernel, and that you understand more generally what it is.</p>
+<p>I hope this will have allowed you to understand certain things and do not hesitate to write me if you have any questions, whether in my explanations or in relation to the code.</p>
+<p>I now advise you to read the <a href="https://ech0.re/posts/kernel-module-development/" rel="">development of a module</a>, which is a good follow-up to this article.</p>
+<p>Thank you for reading.</p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2022-03-25</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://ech0.re/posts/kernel-syscall-development/" data-title="Kernel-Land: System call development" data-via="ech0fr" data-hashtags="kernel-land,syscall,development,linux"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://ech0.re/posts/kernel-syscall-development/"><i class="fab fa-linkedin fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://ech0.re/posts/kernel-syscall-development/"><i class="fab fa-reddit fa-fw" aria-hidden="true"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel-land/">kernel-land</a>,&nbsp;<a href="/tags/syscall/">syscall</a>,&nbsp;<a href="/tags/development/">development</a>,&nbsp;<a href="/tags/linux/">linux</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav">
+            <a href="/posts/kernel-module-development/" class="next" rel="next" title="Kernel-Land: Module development">Kernel-Land: Module development<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://ech0.re" target="_blank">Ech0</a></span>&nbsp;|&nbsp;<span class="license">me@ech0.re</span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

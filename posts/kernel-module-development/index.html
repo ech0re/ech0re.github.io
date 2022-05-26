@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Kernel-Land: Module development - Ech0.re</title><meta name="Description" content="Security blog"><meta property="og:title" content="Kernel-Land: Module development" />
+<meta property="og:description" content="We have seen previously how to develop and integrate a system call into the Linux kernel. Now we are going to look at another form of code execution in ring 0 (kernel-land): the Linux module system.
+Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both in terms of how it works and how to integrate/test it. There are plenty of new concepts to learn here and no redundancy with the article on system calls." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ech0.re/posts/kernel-module-development/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-04-05T11:31:15+02:00" />
+<meta property="article:modified_time" content="2022-04-05T11:31:15+02:00" /><meta property="og:site_name" content="Ech0.re" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Kernel-Land: Module development"/>
+<meta name="twitter:description" content="We have seen previously how to develop and integrate a system call into the Linux kernel. Now we are going to look at another form of code execution in ring 0 (kernel-land): the Linux module system.
+Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both in terms of how it works and how to integrate/test it. There are plenty of new concepts to learn here and no redundancy with the article on system calls."/>
+<meta name="application-name" content="Ech0.re">
+<meta name="apple-mobile-web-app-title" content="Ech0.re"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://ech0.re/posts/kernel-module-development/" /><link rel="prev" href="https://ech0.re/posts/kernel-syscall-development/" /><link rel="next" href="https://ech0.re/posts/packing-resources/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"></noscript><link rel="preload" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Kernel-Land: Module development",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/ech0.re\/posts\/kernel-module-development\/"
+        },"genre": "posts","keywords": "kernel-land, syscall, development, linux","wordcount":  2618 ,
+        "url": "https:\/\/ech0.re\/posts\/kernel-module-development\/","datePublished": "2022-04-05T11:31:15+02:00","dateModified": "2022-04-05T11:31:15+02:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Ech0"
+            },"description": ""
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('light' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'light' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Ech0.re">Ech0.re</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> Posts </a><a class="menu-item" href="/tags/"> Tags </a><a class="menu-item" href="/categories/"> Categories </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Ech0.re">Ech0.re</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="">Posts</a><a class="menu-item" href="/tags/" title="">Tags</a><a class="menu-item" href="/categories/" title="">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Kernel-Land: Module development</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-category">included in <a href="/categories/linux-kernel/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Linux kernel</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2022-04-05">2022-04-05</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;2618 words&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;13 minutes&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-introduction">1. Introduction</a></li>
+    <li><a href="#2-prerequisites">2. Prerequisites</a></li>
+    <li><a href="#3-module-creation">3. Module creation</a>
+      <ul>
+        <li><a href="#31-simple-development">3.1. Simple development</a></li>
+        <li><a href="#32-compiling-and-loading-the-module">3.2. Compiling and loading the module</a></li>
+      </ul>
+    </li>
+    <li><a href="#4-interaction-with-the-module">4. Interaction with the module</a>
+      <ul>
+        <li><a href="#41-registering-the-device">4.1. Registering the device</a></li>
+        <li><a href="#42-write-operation">4.2. Write operation</a></li>
+        <li><a href="#43-read-operation">4.3. Read operation</a></li>
+        <li><a href="#44-lets-test-everything">4.4. Let&rsquo;s test everything!</a></li>
+      </ul>
+    </li>
+    <li><a href="#5-conclusion">5. Conclusion</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>We have seen previously <a href="https://ech0.re/posts/kernel-syscall-development/" rel="">how to develop and integrate a system call into the Linux kernel</a>. Now we are going to look at another form of code execution in ring 0 (kernel-land): the <strong>Linux module system</strong>.</p>
+<div class="details admonition note open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-pencil-alt fa-fw" aria-hidden="true"></i>Note<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">Don&rsquo;t worry: it&rsquo;s totally different from a system call, both in terms of how it works and how to integrate/test it. There are plenty of new concepts to learn here and no redundancy with the article on system calls.</div>
+        </div>
+    </div>
+<p>In addition, we will see how to <strong>dynamically intereact</strong> with our Linux module from the user-land using &ldquo;misc devices&rdquo;.</p>
+<h2 id="1-introduction">1. Introduction</h2>
+<p>Before starting and so that we are on the same basis, we will explain a little what we are talking about here.</p>
+<p>We are going to focus on the <a href="https://tldp.org/LDP/tlk/modules/modules.html" target="_blank" rel="noopener noreffer">modules</a> (or drivers in Windows language) of the Linux kernel. These are pieces of code in ring 0 (kernel-land) that can be loaded and unloaded from the kernel according to our needs.</p>
+<p>Several modules are already loaded in your Linux kernel by default, in particular for the management of the touchpad, the camera, the microphone, the touchscreen, KVM, etc. You can also list all the Linux modules loaded with the following command.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ lsmod
+</span></span><span class="line"><span class="cl">Module                  Size  Used by
+</span></span><span class="line"><span class="cl">rfcomm                 <span class="m">81920</span>  <span class="m">4</span>
+</span></span><span class="line"><span class="cl">cdc_mbim               <span class="m">20480</span>  <span class="m">0</span>
+</span></span><span class="line"><span class="cl">cdc_wdm                <span class="m">24576</span>  <span class="m">1</span> cdc_mbim
+</span></span><span class="line"><span class="cl">cdc_ncm                <span class="m">45056</span>  <span class="m">1</span> cdc_mbim
+</span></span><span class="line"><span class="cl">cdc_ether              <span class="m">20480</span>  <span class="m">1</span> cdc_ncm
+</span></span><span class="line"><span class="cl">...
+</span></span></code></pre></div><p>Some of these modules also create communication interfaces, often in <strong>/dev</strong> for character devices, as is the case of the KVM module with <strong>/dev/kvm</strong>.</p>
+<p>We will therefore in this article develop our own Linux kernel module, load it, and communicate with it via an interface exposed in <strong>/dev</strong>.</p>
+<h2 id="2-prerequisites">2. Prerequisites</h2>
+<p>If you want to follow the development and test by yourself, there are a few prerequisites.</p>
+<ul>
+<li>Operating system running on a relatively recent <strong>Linux kernel</strong>.</li>
+<li>Usual <strong>development tools</strong> (gcc, make, &hellip;)</li>
+<li>A <strong>text editor</strong> (vim, VSCode, &hellip;)</li>
+</ul>
+<p>Contrary to the article on system calls, here we are <strong>not going to recompile the whole kernel or even boot on another kernel</strong>. So don&rsquo;t worry, your system risks (almost!) nothing. Indeed, the only risk is to <strong>crash your system</strong> if you load a module whose code leads to a segmentation fault or exception that the kernel cannot handle. In this case, <strong>all you have to do is restart your machine</strong>.</p>
+<h2 id="3-module-creation">3. Module creation</h2>
+<div class="details admonition tip open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-lightbulb fa-fw" aria-hidden="true"></i>Tip<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">Good news, your default Linux environment is already ready for the development, compilation and loading of a new module. You don&rsquo;t really have to do anything more to develop and compile a Linux module. If you can compile C code then you&rsquo;re good to go.</div>
+        </div>
+    </div>
+<h3 id="31-simple-development">3.1. Simple development</h3>
+<p>To begin, we will simply create a folder that will contain the files of our module including a C file.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ tree my_module/
+</span></span><span class="line"><span class="cl">my_module/
+</span></span><span class="line"><span class="cl">└── my_module.c
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="m">0</span> directories, <span class="m">1</span> file
+</span></span></code></pre></div><p>Unlike the article on the system call, here we will stick to a very simple code so that everyone can understand what we are doing. We will now write in the C file the few basic lines that will constitute our module.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/kernel.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/init.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_LICENSE</span><span class="p">(</span><span class="s">&#34;GPL&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_AUTHOR</span><span class="p">(</span><span class="s">&#34;Ech0 &lt;me@ech0.re&gt;&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_DESCRIPTION</span><span class="p">(</span><span class="s">&#34;Hello World module&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">hello_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">&#34;Hello World !</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">void</span> <span class="n">__exit</span> <span class="nf">hello_cleanup</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">&#34;Cleaning up module.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">module_init</span><span class="p">(</span><span class="n">hello_init</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">module_exit</span><span class="p">(</span><span class="n">hello_cleanup</span><span class="p">);</span>
+</span></span></code></pre></div><div class="details admonition info open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-info-circle fa-fw" aria-hidden="true"></i>Explanation<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content"><p>A small explanation is needed.</p>
+<ul>
+<li>First, we import <strong>the Linux kernel header files</strong> that we need for compiling our module.</li>
+<li>Then, some kernel macros will allow us to specify <strong>metadata</strong> about our module: license, author, description.</li>
+<li>Two minimal definitions of generic functions follow: they take the attributes <code>__init</code> and <code>__exit</code>, respectively called when the kernel is <strong>loaded</strong> or <strong>unloaded</strong>.</li>
+<li>Finally, the <code>module_init()</code> and <code>module_exit()</code> functions will indicate our initialization and destruction functions to the kernel.</li>
+<li>Our two functions will, for now, simply print text in the kernel logs using <code>printk()</code>.</li>
+</ul>
+</div>
+        </div>
+    </div>
+<h3 id="32-compiling-and-loading-the-module">3.2. Compiling and loading the module</h3>
+<p>We can now compile our module and load it into the kernel.</p>
+<p>The following Makefile that we add in our working folder will allow us to correctly compile our module and clean up the various object files that could be generated.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="nv">FILE</span> <span class="o">:=</span> <span class="s2">&#34;my_module&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">obj-m</span> <span class="o">+=</span> my_module.o
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nf">all</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">	<span class="nb">echo</span> <span class="s2">&#34;Compiling </span><span class="k">$(</span>FILE<span class="k">)</span><span class="s2">...&#34;</span>
+</span></span><span class="line"><span class="cl">	make -C /lib/modules/<span class="k">$(</span>shell uname -r<span class="k">)</span>/build <span class="nv">M</span><span class="o">=</span><span class="k">$(</span>PWD<span class="k">)</span> modules
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nf">clean</span><span class="o">:</span>	
+</span></span><span class="line"><span class="cl">	<span class="nb">echo</span> <span class="s2">&#34;Cleaning modules...&#34;</span>
+</span></span><span class="line"><span class="cl">	make -C /lib/modules/<span class="k">$(</span>shell uname -r<span class="k">)</span>/build <span class="nv">M</span><span class="o">=</span><span class="k">$(</span>PWD<span class="k">)</span> clean
+</span></span><span class="line"><span class="cl">	rm -rf .<span class="k">$(</span>FILE<span class="k">)</span>.ko.cmd .<span class="k">$(</span>FILE<span class="k">)</span>.mod.o.cmd .<span class="k">$(</span>FILE<span class="k">)</span>.o.cmd .cache.mk .tmp_versions <span class="k">$(</span>FILE<span class="k">)</span>.ko <span class="k">$(</span>FILE<span class="k">)</span>.o <span class="k">$(</span>FILE<span class="k">)</span>.mod.c <span class="k">$(</span>FILE<span class="k">)</span>.mod.o modules.order Module.symvers 2&gt;<span class="p">&amp;</span>-
+</span></span></code></pre></div><p>We now proceed to the compilation.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">make
+</span></span></code></pre></div><p>Now a whole bunch of files have been generated in the current folder. The one that interests us is the file with the <strong>.ko</strong> extension, in our case it is <strong>my_module.ko</strong>: this is the kernel object that we will load as a module using the <code>insmod</code> command.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">sudo insmod my_module.ko
+</span></span></code></pre></div><div class="details admonition warning open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-exclamation-triangle fa-fw" aria-hidden="true"></i>Warning<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">You will not be able to load an unsigned module into your kernel if you have <strong>Secure Boot</strong> enabled in your bios. I won&rsquo;t talk about secure boot and Linux module and kernel signing in this article. You will find a lot of information on the internet.</div>
+        </div>
+    </div>
+<p>We can use the <code>dmesg</code> command to see the loading of our module, with the display of the string &ldquo;Hello World!&rdquo; defined earlier in the initialization.</p>
+<pre tabindex="0"><code>[309528.612844] Hello World !
+</code></pre><p>Now we will remove the kernel module with the <code>rmmod</code> command and see the display of the string &ldquo;Cleaning up module.&rdquo; through the <code>dmesg</code> command.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">sudo rmmod my_module
+</span></span></code></pre></div><pre tabindex="0"><code>[309551.667600] Cleaning up module.
+</code></pre><div class="details admonition success open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-check-circle fa-fw" aria-hidden="true"></i>Success<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">Our module works as expected. You now know how to write, compile, load and unload your own module in the Linux kernel. This article could end there, but I also want to show you how to interact with this module dynamically via a <strong>misc device</strong>.</div>
+        </div>
+    </div>
+<p>Now, if you wish, you can clean the object files with <code>make clean</code>.</p>
+<h2 id="4-interaction-with-the-module">4. Interaction with the module</h2>
+<p>In this step, we are going to register a <strong>misc device</strong> to the kernel via the <code>misc_register</code> function. In order to do this, we are going to modify our module code a bit.</p>
+<p>As a reminder, our module code, written in <strong>my_module.c</strong>, currently looks like this:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/kernel.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/init.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_LICENSE</span><span class="p">(</span><span class="s">&#34;GPL&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_AUTHOR</span><span class="p">(</span><span class="s">&#34;Ech0 &lt;me@ech0.re&gt;&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_DESCRIPTION</span><span class="p">(</span><span class="s">&#34;Hello World module&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">hello_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">&#34;Hello World !</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">void</span> <span class="n">__exit</span> <span class="nf">hello_cleanup</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">&#34;Cleaning up module.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">module_init</span><span class="p">(</span><span class="n">hello_init</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">module_exit</span><span class="p">(</span><span class="n">hello_cleanup</span><span class="p">);</span>
+</span></span></code></pre></div><h3 id="41-registering-the-device">4.1. Registering the device</h3>
+<p>I will explain step by step the additions that we are going to make to the code. First, we&rsquo;ll declare our <strong>misc device structure</strong> as a static global variable at the top of our C code:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">static</span> <span class="k">struct</span> <span class="n">miscdevice</span> <span class="n">my_dev</span><span class="p">;</span>
+</span></span></code></pre></div><p>This structure will be used for registering and deleting the misc device.</p>
+<p>Next, we will, in the <code>hello_init</code> initialization function, assign some fields and register the misc device:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">my_dev</span><span class="p">.</span><span class="n">minor</span> <span class="o">=</span> <span class="n">MISC_DYNAMIC_MINOR</span><span class="p">;</span> <span class="c1">// a dynamic minor number is requested
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">my_dev</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;my_module_misc&#34;</span><span class="p">;</span> <span class="c1">// name of the misc device
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">my_dev</span><span class="p">.</span><span class="n">fops</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">my_fops</span><span class="p">;</span> <span class="c1">// operations structure
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">ret</span> <span class="o">=</span> <span class="n">misc_register</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_dev</span><span class="p">);</span> <span class="c1">// registering the misc device
+</span></span></span></code></pre></div><p>Now we will have to define the operations structure. It&rsquo;s simple, we are defining a communication interface, so we have to specify what our module should do when we try to <strong>read</strong> from or <strong>write</strong> to it.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">file_operations</span> <span class="n">my_fops</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">.</span><span class="n">read</span> <span class="o">=</span> <span class="n">hello_read</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="p">.</span><span class="n">write</span> <span class="o">=</span> <span class="n">hello_write</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><p>So we specify that when reading, it is the <code>hello_read</code> function that will be called, and when writing it will be <code>hello_write</code>.</p>
+<p>Finally, we need to specify that the misc device should be destroyed when the module is unloaded from the kernel. So we call the following function in our <code>hello_cleanup</code> destruction function.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">misc_deregister</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_dev</span><span class="p">);</span>
+</span></span></code></pre></div><p>We add the few missing headers to use our misc device:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/miscdevice.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/uaccess.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/fs.h&gt;</span><span class="cp">
+</span></span></span></code></pre></div><p>To summarize, our code now looks like this:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/kernel.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/init.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/miscdevice.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/uaccess.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/fs.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_LICENSE</span><span class="p">(</span><span class="s">&#34;GPL&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_AUTHOR</span><span class="p">(</span><span class="s">&#34;Ech0 &lt;me@ech0.re&gt;&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_DESCRIPTION</span><span class="p">(</span><span class="s">&#34;Hello World module&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="k">struct</span> <span class="n">miscdevice</span> <span class="n">my_dev</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">file_operations</span> <span class="n">my_fops</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">.</span><span class="n">read</span> <span class="o">=</span> <span class="n">hello_read</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="p">.</span><span class="n">write</span> <span class="o">=</span> <span class="n">hello_write</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">hello_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">&#34;Hello World !</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">my_dev</span><span class="p">.</span><span class="n">minor</span> <span class="o">=</span> <span class="n">MISC_DYNAMIC_MINOR</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">my_dev</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;my_module_misc&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">my_dev</span><span class="p">.</span><span class="n">fops</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">my_fops</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">ret</span> <span class="o">=</span> <span class="n">misc_register</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_dev</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">void</span> <span class="n">__exit</span> <span class="nf">hello_cleanup</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">&#34;Cleaning up module.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">misc_deregister</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_dev</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">module_init</span><span class="p">(</span><span class="n">hello_init</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">module_exit</span><span class="p">(</span><span class="n">hello_cleanup</span><span class="p">);</span>
+</span></span></code></pre></div><p>Yes, something is missing: the <code>hello_read</code> and <code>hello_write</code> functions, otherwise our code will not compile! We now need to define how this module should react when the user <strong>reads</strong> or <strong>writes</strong> to the misc device.</p>
+<p>To keep things simple, let&rsquo;s just decide that when writing to the device, our module will <strong>store a string of exactly 10 bytes in a static buffer</strong>. On a read operation, we&rsquo;ll just <strong>return that string</strong> to the user.</p>
+<p>It looks useless, but you&rsquo;ll see that we already have plenty to do with it.</p>
+<h3 id="42-write-operation">4.2. Write operation</h3>
+<p>Let&rsquo;s start with the writing function.</p>
+<p><strong>Source code</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">static</span> <span class="n">ssize_t</span> <span class="nf">hello_write</span><span class="p">(</span><span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">f</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="n">s</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">n</span><span class="p">,</span> <span class="n">loff_t</span> <span class="o">*</span><span class="n">o</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">retval</span> <span class="o">=</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">f</span> <span class="o">||</span> <span class="o">!</span><span class="n">s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">!=</span> <span class="n">LEN</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">retval</span> <span class="o">=</span> <span class="n">copy_from_user</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">LEN</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">retval</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">&#34;I have successfully written %s in buffer.&#34;</span><span class="p">,</span> <span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">LEN</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><div class="details admonition info open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-info-circle fa-fw" aria-hidden="true"></i>Explanation<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content"><p>A small explanation is needed.</p>
+<ul>
+<li>
+<p><strong>Function prototype</strong></p>
+<ul>
+<li>
+<p><code>struct file *f</code>: file descriptor associated with the device</p>
+</li>
+<li>
+<p><code>const char __user *s</code>: user-land pointer of the buffer where the user wrote</p>
+</li>
+<li>
+<p><code>size_t n</code>: number of bytes written by the user in user-land</p>
+</li>
+<li>
+<p><code>loff_t *o</code>: current offset of the pointer in the write or read buffer</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Basic checks</strong></p>
+<ul>
+<li>
+<p><code>if (!f || !s)</code>: we check that the pointer to the file and the pointer to the user buffer are not <strong>null</strong></p>
+</li>
+<li>
+<p><code>if (n!= LEN)</code>: we check that the user has written exactly <strong>LEN</strong> bytes (size check)</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Retrieval of data from the user land with the <code>copy_from_user(buf, s, LEN)</code> function. We copy the data pointed to by <strong>s</strong> in user-land, of size <strong>LEN</strong>, to <strong>buf</strong> in kernel-land. The returned value will be <strong>null</strong> if the function call is successful.</p>
+</li>
+<li>
+<p>Verification of the success of the copy of user data with <code>if (retval)</code>.</p>
+</li>
+<li>
+<p>Returning the number of bytes read via <code>return LEN</code>. <strong>Attention</strong>, it is very important here to return the correct number of bytes read, which is <strong>LEN</strong> in our case: it is <strong>very easy to crash the kernel</strong> (unless you are fast enough to do an <code>rmmod</code>) by returning for example <strong>0</strong> which will have the effect of looping the function infinitely…</p>
+</li>
+</ul>
+</div>
+        </div>
+    </div>
+<h3 id="43-read-operation">4.3. Read operation</h3>
+<p>Perfect, now it&rsquo;s the turn of the reading function.</p>
+<p><strong>Source code</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">static</span> <span class="n">ssize_t</span> <span class="nf">hello_read</span><span class="p">(</span><span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">f</span><span class="p">,</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="n">s</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">n</span><span class="p">,</span> <span class="n">loff_t</span> <span class="o">*</span><span class="n">o</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">f</span> <span class="o">||</span> <span class="o">!</span><span class="n">s</span> <span class="o">||</span> <span class="o">!</span><span class="n">o</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">o</span> <span class="o">&gt;=</span> <span class="n">LEN</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="n">LEN</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">n</span> <span class="o">=</span> <span class="n">LEN</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">copy_to_user</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">buf</span><span class="p">[</span><span class="o">*</span><span class="n">o</span><span class="p">],</span> <span class="n">n</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="o">*</span><span class="n">o</span> <span class="o">+=</span> <span class="n">n</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">n</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><div class="details admonition info open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-info-circle fa-fw" aria-hidden="true"></i>Explanation<i class="details-icon fas fa-angle-right fa-fw" aria-hidden="true"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content"><p>Again, a small explanation is needed&hellip; That said, I won&rsquo;t explain again what is redundant with the write function.</p>
+<ul>
+<li>
+<p><strong>Basic checks</strong></p>
+<ul>
+<li>
+<p>Checking the <code>loff_t *o</code> offset: it is important here since we are going to use it.</p>
+</li>
+<li>
+<p>Checking the current offset: <code>if (*o &gt;= LEN)</code>. This is because we need to return <strong>0</strong> when the user has finished reading the requested string. To do this, we rely on the current offset, or the pointer in the file, to define whether we are at the end or not. <strong>Warning</strong>: if this return is not properly managed, it can lead to <strong>infinite loops</strong>.</p>
+</li>
+<li>
+<p>Checking the read size with <code>if (n &gt; LEN)</code>: we make sure that the user does not request more bytes than what we have stored in our buffer.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Writing the character string from the buffer to the user-land buffer. You will notice here that we copy the string based not only on the number of bytes requested but also on the current offset: <strong>if the offset has been shifted, we write from this offset and not from the beginning</strong>.</p>
+</li>
+<li>
+<p>Increment the offset by the number of characters sent to the user: <code>*o += n</code>.</p>
+</li>
+<li>
+<p>Return the number of characters sent, and <strong>0</strong> in case of the end of string.</p>
+</li>
+</ul>
+</div>
+        </div>
+    </div>
+<p>But then, why did we even bother with this offset stuff, instead of just doing a <code>copy_to_user()</code> with the size of our string?</p>
+<p>Indeed, if the user ever tries to read the file with a simple <code>cat</code> command, this will try to read a sufficiently large page, and the number of bytes requested will be greater than <strong>LEN</strong> (here, <strong>10</strong>), so we will return only once the 10 bytes requested.</p>
+<p><strong>However</strong>, two scenarios may arise:</p>
+<ul>
+<li>
+<p>The user can very well read the file without going through the <code>cat</code> command, but simply by making a <code>read()</code> <strong>system call</strong> by reading character by character!</p>
+</li>
+<li>
+<p>The buffer could be <strong>much bigger</strong> than what <code>cat</code> uses as a minimum page.</p>
+</li>
+</ul>
+<p>Here is the issue that this would cause: if the user asks to read fewer characters than what we have stored, <strong>how do we send our entire string</strong> to them?</p>
+<p>Well, we use the offset <code>loff_t *o</code> for this. Indeed, <strong>each time the user reads</strong> by a certain size, <strong>we will increment this offset</strong> by the same size in order to remember that on the next call, we must <strong>start from this index</strong> and not from the beginning. Thus, the user will be able to chain several read system calls and still recover the entirety of our buffer.</p>
+<h3 id="44-lets-test-everything">4.4. Let&rsquo;s test everything!</h3>
+<p>For reference, our final code looks like the following.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/kernel.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/init.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/miscdevice.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/uaccess.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/fs.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_LICENSE</span><span class="p">(</span><span class="s">&#34;GPL&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_AUTHOR</span><span class="p">(</span><span class="s">&#34;Ech0 &lt;me@ech0.re&gt;&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">MODULE_DESCRIPTION</span><span class="p">(</span><span class="s">&#34;Hello World module&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#define LEN 10
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="k">struct</span> <span class="n">miscdevice</span> <span class="n">my_dev</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="n">LEN</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">ssize_t</span> <span class="nf">hello_write</span><span class="p">(</span><span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">f</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="n">s</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">n</span><span class="p">,</span> <span class="n">loff_t</span> <span class="o">*</span><span class="n">o</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">retval</span> <span class="o">=</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">f</span> <span class="o">||</span> <span class="o">!</span><span class="n">s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">!=</span> <span class="n">LEN</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">retval</span> <span class="o">=</span> <span class="n">copy_from_user</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">LEN</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">retval</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">&#34;I have successfully written %s in buffer.&#34;</span><span class="p">,</span> <span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">LEN</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">ssize_t</span> <span class="nf">hello_read</span><span class="p">(</span><span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">f</span><span class="p">,</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="n">s</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">n</span><span class="p">,</span> <span class="n">loff_t</span> <span class="o">*</span><span class="n">o</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">f</span> <span class="o">||</span> <span class="o">!</span><span class="n">s</span> <span class="o">||</span> <span class="o">!</span><span class="n">o</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">o</span> <span class="o">&gt;=</span> <span class="n">LEN</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="n">LEN</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="n">n</span> <span class="o">=</span> <span class="n">LEN</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">copy_to_user</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">buf</span><span class="p">[</span><span class="o">*</span><span class="n">o</span><span class="p">],</span> <span class="n">n</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="o">*</span><span class="n">o</span> <span class="o">+=</span> <span class="n">n</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">n</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">file_operations</span> <span class="n">my_fops</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">.</span><span class="n">read</span> <span class="o">=</span> <span class="n">hello_read</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="p">.</span><span class="n">write</span> <span class="o">=</span> <span class="n">hello_write</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">hello_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">&#34;Hello World !</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">my_dev</span><span class="p">.</span><span class="n">minor</span> <span class="o">=</span> <span class="n">MISC_DYNAMIC_MINOR</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">my_dev</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;my_module_misc&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">my_dev</span><span class="p">.</span><span class="n">fops</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">my_fops</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">ret</span> <span class="o">=</span> <span class="n">misc_register</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_dev</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">void</span> <span class="n">__exit</span> <span class="nf">hello_cleanup</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">printk</span><span class="p">(</span><span class="n">KERN_INFO</span> <span class="s">&#34;Cleaning up module.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">misc_deregister</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_dev</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">module_init</span><span class="p">(</span><span class="n">hello_init</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">module_exit</span><span class="p">(</span><span class="n">hello_cleanup</span><span class="p">);</span>
+</span></span></code></pre></div><p><strong>Compilation and basic tests</strong></p>
+<p>We compile (<code>make</code>), we load the module (<code>insmod</code>), we give the needed writing rights to our misc device (<code>chmod</code>), and we test all that.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">make <span class="c1"># compilation</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">sudo insmod my_module.ko <span class="c1"># loading the module</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">sudo chmod o+w /dev/my_module_misc <span class="c1"># writing rights</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">ls -l /dev/my_module_misc <span class="c1"># verification</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">sudo <span class="nb">echo</span> -n <span class="s2">&#34;1234567890&#34;</span> &gt; /dev/my_module_misc <span class="c1"># writing 10 bytes in our buffer</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">dmesg <span class="c1"># verification : [316644.720207] I have successfully written 1234567890 in buffer.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">sudo cat /dev/my_module_misc <span class="c1"># reading the buffer : 1234567890</span>
+</span></span></code></pre></div><p>As you can see, we were able to write <strong>10 bytes</strong> in our buffer with the <code>echo</code> command and read them with <code>cat</code>.</p>
+<p><strong>Special cases</strong></p>
+<p>But since we made the effort of dealing with the scenario of reading the buffer in an unconventional way, we will try to read it <strong>2 by 2 bytes</strong>! For that I coded this little C program to use the <code>read</code> system call:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/stat.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">&#34;/dev/my_module_misc&#34;</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">while</span> <span class="p">(</span><span class="n">read</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">buf</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">printf</span><span class="p">(</span><span class="s">&#34;%s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>We test this right away:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ gcc test.c -o <span class="nb">test</span>
+</span></span><span class="line"><span class="cl">$ sudo ./test
+</span></span><span class="line"><span class="cl"><span class="m">12</span>
+</span></span><span class="line"><span class="cl"><span class="m">34</span>
+</span></span><span class="line"><span class="cl"><span class="m">56</span>
+</span></span><span class="line"><span class="cl"><span class="m">78</span>
+</span></span><span class="line"><span class="cl"><span class="m">90</span>
+</span></span></code></pre></div><p>And it&rsquo;s a success: we managed to read the entire buffer, <strong>2 by 2 bytes</strong> by chaining 5 <code>read</code> system calls.</p>
+<h2 id="5-conclusion">5. Conclusion</h2>
+<p>Well, it&rsquo;s already over. You have learnt how to create a kernel module, load it, and associate a misc device communication interface to it to manage the reading and writing of data between user-land and kernel-land.</p>
+<p>Thanks for the reading.</p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2022-04-05</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://ech0.re/posts/kernel-module-development/" data-title="Kernel-Land: Module development" data-via="ech0fr" data-hashtags="kernel-land,syscall,development,linux"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://ech0.re/posts/kernel-module-development/"><i class="fab fa-linkedin fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://ech0.re/posts/kernel-module-development/"><i class="fab fa-reddit fa-fw" aria-hidden="true"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel-land/">kernel-land</a>,&nbsp;<a href="/tags/syscall/">syscall</a>,&nbsp;<a href="/tags/development/">development</a>,&nbsp;<a href="/tags/linux/">linux</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/kernel-syscall-development/" class="prev" rel="prev" title="Kernel-Land: System call development"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Kernel-Land: System call development</a>
+            <a href="/posts/packing-resources/" class="next" rel="next" title="Packing: dropping from resources">Packing: dropping from resources<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://ech0.re" target="_blank">Ech0</a></span>&nbsp;|&nbsp;<span class="license">me@ech0.re</span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>
