@@ -2,21 +2,21 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     ><url>
-            <loc>https://www.ech0.re/privacy/</loc><lastmod>2022-05-26T21:27:36&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/categories/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/tags/dropper/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/tags/malware/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/categories/packer/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/tags/packing/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/posts/packing-resources/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/posts/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/tags/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/tags/windows/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/tags/development/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/tags/kernel-land/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/posts/kernel-module-development/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/tags/linux/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/categories/linux-kernel/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/tags/syscall/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
-            <loc>https://www.ech0.re/posts/kernel-syscall-development/</loc><lastmod>2022-03-25T00:07:09&#43;02:00</lastmod></url></urlset>
+            <loc>https://ech0.re/privacy/</loc><lastmod>2022-05-26T21:27:36&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/categories/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/tags/dropper/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/tags/malware/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/categories/packer/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/tags/packing/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/posts/packing-resources/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/posts/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/tags/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/tags/windows/</loc><lastmod>2022-04-15T18:39:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/tags/development/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/tags/kernel-land/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/posts/kernel-module-development/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/tags/linux/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/categories/linux-kernel/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/tags/syscall/</loc><lastmod>2022-04-05T11:31:15&#43;02:00</lastmod></url><url>
+            <loc>https://ech0.re/posts/kernel-syscall-development/</loc><lastmod>2022-03-25T00:07:09&#43;02:00</lastmod></url></urlset>

@@ -1,17 +1,17 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
         <title>Ech0 Security Blog</title>
-        <link>https://www.ech0.re/</link>
+        <link>https://ech0.re/</link>
         <description>Security blog</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>me@ech0.re (Ech0)</managingEditor>
             <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Fri, 15 Apr 2022 18:39:15 &#43;0200</lastBuildDate>
-            <atom:link href="https://www.ech0.re/index.xml" rel="self" type="application/rss+xml" />
+            <atom:link href="https://ech0.re/index.xml" rel="self" type="application/rss+xml" />
         <item>
     <title>Packing: dropping from resources</title>
-    <link>https://www.ech0.re/posts/packing-resources/</link>
+    <link>https://ech0.re/posts/packing-resources/</link>
     <pubDate>Fri, 15 Apr 2022 18:39:15 &#43;0200</pubDate>
     <author>Ech0</author>
-    <guid>https://www.ech0.re/posts/packing-resources/</guid>
+    <guid>https://ech0.re/posts/packing-resources/</guid>
     <description><![CDATA[Warning  The knowledge acquired in this article is for strictly educational purposes.
 You are not allowed to use tools or techniques for malicious purposes: it is immoral and illegal.
 If you&rsquo;re not sure what you&rsquo;re doing, don&rsquo;t.
@@ -20,19 +20,19 @@ I cannot be held responsible for any misuse you may make of this knowledge.
 </item>
 <item>
     <title>Kernel-Land: Module development</title>
-    <link>https://www.ech0.re/posts/kernel-module-development/</link>
+    <link>https://ech0.re/posts/kernel-module-development/</link>
     <pubDate>Tue, 05 Apr 2022 11:31:15 &#43;0200</pubDate>
     <author>Ech0</author>
-    <guid>https://www.ech0.re/posts/kernel-module-development/</guid>
+    <guid>https://ech0.re/posts/kernel-module-development/</guid>
     <description><![CDATA[We have seen previously how to develop and integrate a system call into the Linux kernel. Now we are going to look at another form of code execution in ring 0 (kernel-land): the Linux module system.
 Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both in terms of how it works and how to integrate/test it. There are plenty of new concepts to learn here and no redundancy with the article on system calls.]]></description>
 </item>
 <item>
     <title>Kernel-Land: System call development</title>
-    <link>https://www.ech0.re/posts/kernel-syscall-development/</link>
+    <link>https://ech0.re/posts/kernel-syscall-development/</link>
     <pubDate>Fri, 25 Mar 2022 00:07:09 &#43;0200</pubDate>
     <author>Ech0</author>
-    <guid>https://www.ech0.re/posts/kernel-syscall-development/</guid>
+    <guid>https://ech0.re/posts/kernel-syscall-development/</guid>
     <description><![CDATA[In this article we will see how to:
  Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land  In other terms: we will add our own syscall to the Linux kernel.
 1. Prerequisites If you want to follow the development and test by yourself, there are a few prerequisites.
