@@ -1,0 +1,21 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>tips - Tag - Ech0 Security Blog</title>
+        <link>https://ech0.re/tags/tips/</link>
+        <description>tips - Tag - Ech0 Security Blog</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>me@ech0.re (Ech0)</managingEditor>
+            <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Fri, 27 May 2022 20:53:00 &#43;0200</lastBuildDate><atom:link href="https://ech0.re/tags/tips/" rel="self" type="application/rss+xml" /><item>
+    <title>How to start in cybersecurity</title>
+    <link>https://ech0.re/posts/how-to-start/</link>
+    <pubDate>Fri, 27 May 2022 20:53:00 &#43;0200</pubDate>
+    <author>Ech0</author>
+    <guid>https://ech0.re/posts/how-to-start/</guid>
+    <description><![CDATA[Every person in this community was once a begginer and it&rsquo;s usually a hard domain to begin with if you&rsquo;re not guided.
+I will try to guide you through this article and give you some tips to start your cybersecurity journey.
+This article is for beginners.
+1. The mindset First of all, before even talking about how to begin and where, you should answer this question: why?
+Typically:
+ Why do you want to learn cybersecurity?]]></description>
+</item>
+</channel>
+</rss>
