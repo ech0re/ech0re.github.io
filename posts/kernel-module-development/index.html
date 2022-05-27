@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noodp" />
-        <title>Kernel-Land: Module development - Ech0 Security Blog</title><meta name="Description" content="Security blog"><meta property="og:title" content="Kernel-Land: Module development" />
+        <title>Kernel: Module development - Ech0 Security Blog</title><meta name="Description" content="Security blog"><meta property="og:title" content="Kernel: Module development" />
 <meta property="og:description" content="We have seen previously how to develop and integrate a system call into the Linux kernel. Now we are going to look at another form of code execution in ring 0 (kernel-land): the Linux module system.
 Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both in terms of how it works and how to integrate/test it. There are plenty of new concepts to learn here and no redundancy with the article on system calls." />
 <meta property="og:type" content="article" />
@@ -13,7 +13,7 @@ Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both i
 <meta property="article:modified_time" content="2022-04-05T11:31:15+02:00" /><meta property="og:site_name" content="Ech0.re" />
 
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Kernel-Land: Module development"/>
+<meta name="twitter:title" content="Kernel: Module development"/>
 <meta name="twitter:description" content="We have seen previously how to develop and integrate a system call into the Linux kernel. Now we are going to look at another form of code execution in ring 0 (kernel-land): the Linux module system.
 Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both in terms of how it works and how to integrate/test it. There are plenty of new concepts to learn here and no redundancy with the article on system calls."/>
 <meta name="application-name" content="Ech0.re">
@@ -25,12 +25,12 @@ Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both i
     {
         "@context": "http://schema.org",
         "@type": "BlogPosting",
-        "headline": "Kernel-Land: Module development",
+        "headline": "Kernel: Module development",
         "inLanguage": "en",
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https:\/\/ech0.re\/posts\/kernel-module-development\/"
-        },"genre": "posts","keywords": "kernel-land, syscall, development, linux","wordcount":  2618 ,
+        },"genre": "posts","keywords": "kernel, syscall, development, linux","wordcount":  2618 ,
         "url": "https:\/\/ech0.re\/posts\/kernel-module-development\/","datePublished": "2022-04-05T11:31:15+02:00","dateModified": "2022-04-05T11:31:15+02:00","publisher": {
             "@type": "Organization",
             "name": ""},"author": {
@@ -71,7 +71,7 @@ Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both i
                 <div class="container"><div class="toc" id="toc-auto">
             <h2 class="toc-title">Contents</h2>
             <div class="toc-content always-active" id="toc-content-auto"></div>
-        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Kernel-Land: Module development</h1><div class="post-meta">
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Kernel: Module development</h1><div class="post-meta">
             <div class="post-meta-line"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-category">included in <a href="/categories/linux-kernel/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Linux kernel</a></span></div>
             <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2022-04-05">2022-04-05</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;2618 words&nbsp;
                 <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;13 minutes&nbsp;</div>
@@ -576,20 +576,20 @@ Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both i
         <div class="post-info-line">
             <div class="post-info-md"></div>
             <div class="post-info-share">
-                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://ech0.re/posts/kernel-module-development/" data-title="Kernel-Land: Module development" data-via="ech0fr" data-hashtags="kernel-land,syscall,development,linux"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://ech0.re/posts/kernel-module-development/"><i class="fab fa-linkedin fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://ech0.re/posts/kernel-module-development/"><i class="fab fa-reddit fa-fw" aria-hidden="true"></i></a></span>
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://ech0.re/posts/kernel-module-development/" data-title="Kernel: Module development" data-via="ech0fr" data-hashtags="kernel,syscall,development,linux"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://ech0.re/posts/kernel-module-development/"><i class="fab fa-linkedin fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://ech0.re/posts/kernel-module-development/"><i class="fab fa-reddit fa-fw" aria-hidden="true"></i></a></span>
             </div>
         </div>
     </div>
 
     <div class="post-info-more">
-        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel-land/">kernel-land</a>,&nbsp;<a href="/tags/syscall/">syscall</a>,&nbsp;<a href="/tags/development/">development</a>,&nbsp;<a href="/tags/linux/">linux</a></section>
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel/">kernel</a>,&nbsp;<a href="/tags/syscall/">syscall</a>,&nbsp;<a href="/tags/development/">development</a>,&nbsp;<a href="/tags/linux/">linux</a></section>
         <section>
             <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
         </section>
     </div>
 
-    <div class="post-nav"><a href="/posts/kernel-syscall-development/" class="prev" rel="prev" title="Kernel-Land: System call development"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Kernel-Land: System call development</a>
-            <a href="/posts/packing-resources/" class="next" rel="next" title="Packing: dropping from resources">Packing: dropping from resources<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+    <div class="post-nav"><a href="/posts/kernel-syscall-development/" class="prev" rel="prev" title="Kernel: System call development"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Kernel: System call development</a>
+            <a href="/posts/packing-resources/" class="next" rel="next" title="Packing: Dropping from resources">Packing: Dropping from resources<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
 </div>
 </article></div>
             </main><footer class="footer">

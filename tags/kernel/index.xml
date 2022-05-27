@@ -1,10 +1,10 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
-        <title>Linux kernel - Category - Ech0 Security Blog</title>
-        <link>https://ech0.re/categories/linux-kernel/</link>
-        <description>Linux kernel - Category - Ech0 Security Blog</description>
+        <title>kernel - Tag - Ech0 Security Blog</title>
+        <link>https://ech0.re/tags/kernel/</link>
+        <description>kernel - Tag - Ech0 Security Blog</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>me@ech0.re (Ech0)</managingEditor>
-            <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Tue, 05 Apr 2022 11:31:15 &#43;0200</lastBuildDate><atom:link href="https://ech0.re/categories/linux-kernel/" rel="self" type="application/rss+xml" /><item>
+            <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Tue, 05 Apr 2022 11:31:15 &#43;0200</lastBuildDate><atom:link href="https://ech0.re/tags/kernel/" rel="self" type="application/rss+xml" /><item>
     <title>Kernel: Module development</title>
     <link>https://ech0.re/posts/kernel-module-development/</link>
     <pubDate>Tue, 05 Apr 2022 11:31:15 &#43;0200</pubDate>

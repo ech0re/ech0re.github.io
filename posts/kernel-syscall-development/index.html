@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noodp" />
-        <title>Kernel-Land: System call development - Ech0 Security Blog</title><meta name="Description" content="Security blog"><meta property="og:title" content="Kernel-Land: System call development" />
+        <title>Kernel: System call development - Ech0 Security Blog</title><meta name="Description" content="Security blog"><meta property="og:title" content="Kernel: System call development" />
 <meta property="og:description" content="In this article we will see how to:
  Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land  In other terms: we will add our own syscall to the Linux kernel.
 1. Prerequisites If you want to follow the development and test by yourself, there are a few prerequisites.
@@ -15,7 +15,7 @@
 <meta property="article:modified_time" content="2022-03-25T00:07:09+02:00" /><meta property="og:site_name" content="Ech0.re" />
 
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Kernel-Land: System call development"/>
+<meta name="twitter:title" content="Kernel: System call development"/>
 <meta name="twitter:description" content="In this article we will see how to:
  Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land  In other terms: we will add our own syscall to the Linux kernel.
 1. Prerequisites If you want to follow the development and test by yourself, there are a few prerequisites.
@@ -29,12 +29,12 @@
     {
         "@context": "http://schema.org",
         "@type": "BlogPosting",
-        "headline": "Kernel-Land: System call development",
+        "headline": "Kernel: System call development",
         "inLanguage": "en",
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https:\/\/ech0.re\/posts\/kernel-syscall-development\/"
-        },"genre": "posts","keywords": "kernel-land, syscall, development, linux","wordcount":  2602 ,
+        },"genre": "posts","keywords": "kernel, syscall, development, linux","wordcount":  2602 ,
         "url": "https:\/\/ech0.re\/posts\/kernel-syscall-development\/","datePublished": "2022-03-25T00:07:09+02:00","dateModified": "2022-03-25T00:07:09+02:00","publisher": {
             "@type": "Organization",
             "name": ""},"author": {
@@ -75,7 +75,7 @@
                 <div class="container"><div class="toc" id="toc-auto">
             <h2 class="toc-title">Contents</h2>
             <div class="toc-content always-active" id="toc-content-auto"></div>
-        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Kernel-Land: System call development</h1><div class="post-meta">
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Kernel: System call development</h1><div class="post-meta">
             <div class="post-meta-line"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-category">included in <a href="/categories/linux-kernel/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Linux kernel</a></span></div>
             <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2022-03-25">2022-03-25</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;2602 words&nbsp;
                 <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;13 minutes&nbsp;</div>
@@ -511,20 +511,20 @@ PWD       : /
         <div class="post-info-line">
             <div class="post-info-md"></div>
             <div class="post-info-share">
-                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://ech0.re/posts/kernel-syscall-development/" data-title="Kernel-Land: System call development" data-via="ech0fr" data-hashtags="kernel-land,syscall,development,linux"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://ech0.re/posts/kernel-syscall-development/"><i class="fab fa-linkedin fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://ech0.re/posts/kernel-syscall-development/"><i class="fab fa-reddit fa-fw" aria-hidden="true"></i></a></span>
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://ech0.re/posts/kernel-syscall-development/" data-title="Kernel: System call development" data-via="ech0fr" data-hashtags="kernel,syscall,development,linux"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://ech0.re/posts/kernel-syscall-development/"><i class="fab fa-linkedin fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://ech0.re/posts/kernel-syscall-development/"><i class="fab fa-reddit fa-fw" aria-hidden="true"></i></a></span>
             </div>
         </div>
     </div>
 
     <div class="post-info-more">
-        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel-land/">kernel-land</a>,&nbsp;<a href="/tags/syscall/">syscall</a>,&nbsp;<a href="/tags/development/">development</a>,&nbsp;<a href="/tags/linux/">linux</a></section>
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel/">kernel</a>,&nbsp;<a href="/tags/syscall/">syscall</a>,&nbsp;<a href="/tags/development/">development</a>,&nbsp;<a href="/tags/linux/">linux</a></section>
         <section>
             <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
         </section>
     </div>
 
     <div class="post-nav">
-            <a href="/posts/kernel-module-development/" class="next" rel="next" title="Kernel-Land: Module development">Kernel-Land: Module development<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+            <a href="/posts/kernel-module-development/" class="next" rel="next" title="Kernel: Module development">Kernel: Module development<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
 </div>
 </article></div>
             </main><footer class="footer">
