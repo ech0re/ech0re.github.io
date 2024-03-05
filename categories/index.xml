@@ -4,15 +4,7 @@
         <link>https://ech0.re/categories/</link>
         <description>Categories - Category - Ech0 Security Blog</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>me@ech0.re (Ech0)</managingEditor>
-            <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Sun, 29 May 2022 03:22:29 &#43;0200</lastBuildDate><atom:link href="https://ech0.re/categories/" rel="self" type="application/rss+xml" /><item>
-    <title>Writeup</title>
-    <link>https://ech0.re/categories/writeup/</link>
-    <pubDate>Sun, 29 May 2022 03:22:29 &#43;0200</pubDate>
-    <author>Ech0</author>
-    <guid>https://ech0.re/categories/writeup/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
+            <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Fri, 27 May 2022 20:53:00 &#43;0200</lastBuildDate><atom:link href="https://ech0.re/categories/" rel="self" type="application/rss+xml" /><item>
     <title>Misc</title>
     <link>https://ech0.re/categories/misc/</link>
     <pubDate>Fri, 27 May 2022 20:53:00 &#43;0200</pubDate>
@@ -29,7 +21,7 @@
     <description><![CDATA[]]></description>
 </item>
 <item>
-    <title>Linux kernel</title>
+    <title>Linux Kernel</title>
     <link>https://ech0.re/categories/linux-kernel/</link>
     <pubDate>Tue, 05 Apr 2022 11:31:15 &#43;0200</pubDate>
     <author>Ech0</author>

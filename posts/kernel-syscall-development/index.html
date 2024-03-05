@@ -6,20 +6,20 @@
         <meta name="robots" content="noodp" />
         <title>Kernel: System call development - Ech0 Security Blog</title><meta name="Description" content="Security blog"><meta property="og:title" content="Kernel: System call development" />
 <meta property="og:description" content="In this article we will see how to:
- Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land  In other terms: we will add our own syscall to the Linux kernel.
+Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land In other terms: we will add our own syscall to the Linux kernel.
 1. Prerequisites If you want to follow the development and test by yourself, there are a few prerequisites.
- Operating system running on a relatively recent Linux kernel." />
+Operating system running on a relatively recent Linux kernel. Usual development tools (gcc, make, &hellip;) A text editor (vim, VSCode, &hellip;) Warning In order to test the system call we will recompile the current Linux kernel and boot on it." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ech0.re/posts/kernel-syscall-development/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-03-25T00:07:09+02:00" />
 <meta property="article:modified_time" content="2022-03-25T00:07:09+02:00" /><meta property="og:site_name" content="Ech0.re" />
 
-<meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Kernel: System call development"/>
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Kernel: System call development"/>
 <meta name="twitter:description" content="In this article we will see how to:
- Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land  In other terms: we will add our own syscall to the Linux kernel.
+Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land In other terms: we will add our own syscall to the Linux kernel.
 1. Prerequisites If you want to follow the development and test by yourself, there are a few prerequisites.
- Operating system running on a relatively recent Linux kernel."/>
+Operating system running on a relatively recent Linux kernel. Usual development tools (gcc, make, &hellip;) A text editor (vim, VSCode, &hellip;) Warning In order to test the system call we will recompile the current Linux kernel and boot on it."/>
+<meta name="twitter:site" content="@ech0fr"/>
 <meta name="application-name" content="Ech0.re">
 <meta name="apple-mobile-web-app-title" content="Ech0.re"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -34,7 +34,7 @@
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https:\/\/ech0.re\/posts\/kernel-syscall-development\/"
-        },"genre": "posts","keywords": "kernel, syscall, development, linux","wordcount":  2602 ,
+        },"genre": "posts","keywords": "kernel, syscall, development, linux","wordcount":  2615 ,
         "url": "https:\/\/ech0.re\/posts\/kernel-syscall-development\/","datePublished": "2022-03-25T00:07:09+02:00","dateModified": "2022-03-25T00:07:09+02:00","publisher": {
             "@type": "Organization",
             "name": ""},"author": {
@@ -53,8 +53,7 @@
         <div class="menu">
             <div class="menu-inner"><a class="menu-item" href="/posts/"> Posts </a><a class="menu-item" href="/tags/"> Tags </a><a class="menu-item" href="/categories/"> Categories </a><a class="menu-item" href="/about/"> About </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
                     <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
-                </a>
-            </div>
+                </a></div>
         </div>
     </div>
 </header><header class="mobile" id="header-mobile">
@@ -76,8 +75,8 @@
             <h2 class="toc-title">Contents</h2>
             <div class="toc-content always-active" id="toc-content-auto"></div>
         </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Kernel: System call development</h1><div class="post-meta">
-            <div class="post-meta-line"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-category">included in <a href="/categories/linux-kernel/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Linux kernel</a></span></div>
-            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2022-03-25">2022-03-25</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;2602 words&nbsp;
+            <div class="post-meta-line"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-category">included in <a href="/categories/linux-kernel/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Linux Kernel</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2022-03-25">2022-03-25</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;2615 words&nbsp;
                 <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;13 minutes&nbsp;</div>
         </div><div class="details toc" id="toc-static"  data-kept="">
                 <div class="details-summary toc-title">
@@ -140,7 +139,7 @@
     </div>
 <p>Before starting to develop, we will have to prepare our environment a little. We will act differently depending on whether you are on a VM or your native system. I strongly recommend you to do these manipulations on a Linux VM.</p>
 <h3 id="21-on-a-linux-vm-recommended">2.1. On a Linux VM (recommended)</h3>
-<p>For this article, I downloaded an <a href="https://ubuntu.com/download" target="_blank" rel="noopener noreffer">Ubuntu Server 20.04.4 ISO</a> from the official website and installed it in a Virtual Box VM. You can choose the distribution, version or emulator/hypervisor you want, but you may have some differences with what I will show next.</p>
+<p>For this article, I downloaded an <a href="https://ubuntu.com/download" target="_blank" rel="noopener noreffer ">Ubuntu Server 20.04.4 ISO</a> from the official website and installed it in a Virtual Box VM. You can choose the distribution, version or emulator/hypervisor you want, but you may have some differences with what I will show next.</p>
 <p>I configured the VM with <strong>bridged network</strong> access, <strong>4 GB</strong> of RAM, and I connect to it by SSH to work.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">ech0@host$ ssh ech0@192.168.0.42
 </span></span><span class="line"><span class="cl">ech0@ubuntu-vm:~$
@@ -245,13 +244,13 @@ CONFIG_SYSTEM_REVOCATION_KEYS=&#34;&#34;
 </span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">info_pid</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">pid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">pid_t</span> <span class="n">pid</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">name</span><span class="p">[</span><span class="n">TASK_COMM_LEN</span><span class="p">];</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">state</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="o">*</span><span class="n">stack</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">uint64_t</span> <span class="n">age</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">child</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
-</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">ppid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">pid_t</span> <span class="n">child</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">pid_t</span> <span class="n">ppid</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">root</span><span class="p">[</span><span class="n">PATH_MAX</span><span class="p">];</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">pwd</span><span class="p">[</span><span class="n">PATH_MAX</span><span class="p">];</span>
 </span></span><span class="line"><span class="cl"><span class="p">};</span>
@@ -269,7 +268,7 @@ CONFIG_SYSTEM_REVOCATION_KEYS=&#34;&#34;
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;infopid.h&#34;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;linux/syscalls.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
-</span></span><span class="line"><span class="cl"><span class="n">SYSCALL_DEFINE2</span><span class="p">(</span><span class="n">infopid</span><span class="p">,</span> <span class="k">struct</span> <span class="n">info_pid</span> <span class="o">*</span><span class="p">,</span> <span class="n">ret_pid</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="n">pid</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="nf">SYSCALL_DEFINE2</span><span class="p">(</span><span class="n">infopid</span><span class="p">,</span> <span class="k">struct</span> <span class="n">info_pid</span> <span class="o">*</span><span class="p">,</span> <span class="n">ret_pid</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="n">pid</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">	<span class="k">struct</span> <span class="n">task_struct</span> <span class="o">*</span><span class="n">cur</span><span class="p">,</span> <span class="o">*</span><span class="n">child</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="k">struct</span> <span class="n">info_pid</span> <span class="o">*</span><span class="n">new</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="k">struct</span> <span class="n">path</span> <span class="n">root</span><span class="p">,</span> <span class="n">pwd</span><span class="p">;</span>
@@ -277,55 +276,55 @@ CONFIG_SYSTEM_REVOCATION_KEYS=&#34;&#34;
 </span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">*</span><span class="n">tmp</span><span class="p">,</span> <span class="n">buffer</span><span class="p">[</span><span class="n">PATH_MAX</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
 </span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">spid</span> <span class="o">=</span> <span class="n">find_get_pid</span><span class="p">(</span><span class="n">pid</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">spid</span> <span class="o">=</span> <span class="nf">find_get_pid</span><span class="p">(</span><span class="n">pid</span><span class="p">)))</span>
 </span></span><span class="line"><span class="cl">	<span class="p">{</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">ESRCH</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="n">cur</span> <span class="o">=</span> <span class="n">pid_task</span><span class="p">(</span><span class="n">spid</span><span class="p">,</span> <span class="n">PIDTYPE_PID</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">cur</span> <span class="o">=</span> <span class="nf">pid_task</span><span class="p">(</span><span class="n">spid</span><span class="p">,</span> <span class="n">PIDTYPE_PID</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">cur</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">ESRCH</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="n">new</span> <span class="o">=</span> <span class="n">kmalloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">info_pid</span><span class="p">),</span> <span class="n">GFP_KERNEL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">new</span> <span class="o">=</span> <span class="nf">kmalloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">info_pid</span><span class="p">),</span> <span class="n">GFP_KERNEL</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">new</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">ENOMEM</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="n">memset</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">child</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">256</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">pid_t</span><span class="p">));</span>
-</span></span><span class="line"><span class="cl">	<span class="n">get_fs_root</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">fs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">root</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">get_fs_pwd</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">fs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">pwd</span><span class="p">);</span>	
-</span></span><span class="line"><span class="cl">	<span class="n">get_task_comm</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span> <span class="n">cur</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">pid</span> <span class="o">=</span> <span class="n">task_pid_nr</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">memset</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">child</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">256</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">pid_t</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">get_fs_root</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">fs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">root</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">get_fs_pwd</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">fs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">pwd</span><span class="p">);</span>	
+</span></span><span class="line"><span class="cl">	<span class="nf">get_task_comm</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span> <span class="n">cur</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">pid</span> <span class="o">=</span> <span class="nf">task_pid_nr</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">state</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">state</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">stack</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">stack</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">age</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">start_time</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="n">list_for_each_entry</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">,</span> <span class="n">sibling</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">list_for_each_entry</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">,</span> <span class="n">sibling</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">255</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">			<span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">		<span class="n">new</span><span class="o">-&gt;</span><span class="n">child</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">child</span><span class="o">-&gt;</span><span class="n">pid</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="nl">out</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">ppid</span> <span class="o">=</span> <span class="n">task_pid_nr</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">parent</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">spin_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">root</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">tmp</span> <span class="o">=</span> <span class="n">dentry_path_raw</span><span class="p">(</span><span class="n">root</span><span class="p">.</span><span class="n">dentry</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">PATH_MAX</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">strcpy</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">root</span><span class="p">,</span> <span class="n">tmp</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">spin_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">root</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="o">-&gt;</span><span class="n">ppid</span> <span class="o">=</span> <span class="nf">task_pid_nr</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">parent</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">spin_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">root</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">tmp</span> <span class="o">=</span> <span class="nf">dentry_path_raw</span><span class="p">(</span><span class="n">root</span><span class="p">.</span><span class="n">dentry</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">PATH_MAX</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">strcpy</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">root</span><span class="p">,</span> <span class="n">tmp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">spin_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">root</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	
-</span></span><span class="line"><span class="cl">	<span class="n">spin_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pwd</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">tmp</span> <span class="o">=</span> <span class="n">dentry_path_raw</span><span class="p">(</span><span class="n">pwd</span><span class="p">.</span><span class="n">dentry</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">PATH_MAX</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">strcpy</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">pwd</span><span class="p">,</span> <span class="n">tmp</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">spin_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pwd</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">spin_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pwd</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">tmp</span> <span class="o">=</span> <span class="nf">dentry_path_raw</span><span class="p">(</span><span class="n">pwd</span><span class="p">.</span><span class="n">dentry</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">PATH_MAX</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">strcpy</span><span class="p">(</span><span class="n">new</span><span class="o">-&gt;</span><span class="n">pwd</span><span class="p">,</span> <span class="n">tmp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">spin_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pwd</span><span class="p">.</span><span class="n">dentry</span><span class="o">-&gt;</span><span class="n">d_lock</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">copy_to_user</span><span class="p">(</span><span class="n">ret_pid</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">info_pid</span><span class="p">)))</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="n">kfree</span><span class="p">(</span><span class="n">new</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="nf">copy_to_user</span><span class="p">(</span><span class="n">ret_pid</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">info_pid</span><span class="p">)))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">kfree</span><span class="p">(</span><span class="n">new</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">-</span><span class="n">ESRCH</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
 </span></span><span class="line"><span class="cl">	
-</span></span><span class="line"><span class="cl">	<span class="n">kfree</span><span class="p">(</span><span class="n">new</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">kfree</span><span class="p">(</span><span class="n">new</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	
 </span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
@@ -372,72 +371,72 @@ GRUB_TIMEOUT=4
 </span></span></span><span class="line"><span class="cl"><span class="cp">#define PATH_MAX 4096
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
 </span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">info_pid</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">pid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">pid_t</span> <span class="n">pid</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">name</span><span class="p">[</span><span class="n">TASK_COMM_LEN</span><span class="p">];</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">state</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="o">*</span><span class="n">stack</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">uint64_t</span> <span class="n">age</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">child</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
-</span></span><span class="line"><span class="cl">        <span class="n">pid_t</span> <span class="n">ppid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">pid_t</span> <span class="n">child</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">pid_t</span> <span class="n">ppid</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">root</span><span class="p">[</span><span class="n">PATH_MAX</span><span class="p">];</span>
 </span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">pwd</span><span class="p">[</span><span class="n">PATH_MAX</span><span class="p">];</span>
 </span></span><span class="line"><span class="cl"><span class="p">};</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">print_parents</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">pid</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">print_parents</span><span class="p">(</span><span class="kt">pid_t</span> <span class="n">pid</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="p">{</span>
 </span></span><span class="line"><span class="cl">	<span class="k">struct</span> <span class="n">info_pid</span> <span class="n">new</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="k">static</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\t</span><span class="s">Parent %d : %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">index</span><span class="o">++</span><span class="p">,</span> <span class="n">pid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\t</span><span class="s">Parent %d : %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">index</span><span class="o">++</span><span class="p">,</span> <span class="n">pid</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">pid</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="p">;</span>
-</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">syscall</span><span class="p">(</span><span class="mi">335</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">new</span><span class="p">,</span> <span class="n">pid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="nf">syscall</span><span class="p">(</span><span class="mi">335</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">new</span><span class="p">,</span> <span class="n">pid</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;syscall failed...</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">		<span class="n">perror</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">        <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;syscall failed...</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">perror</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="n">print_parents</span><span class="p">(</span><span class="n">new</span><span class="p">.</span><span class="n">ppid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">print_parents</span><span class="p">(</span><span class="n">new</span><span class="p">.</span><span class="n">ppid</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">ac</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">av</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="n">pid_t</span> <span class="n">pid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">pid_t</span> <span class="n">pid</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="k">struct</span> <span class="n">info_pid</span> <span class="n">new</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">	<span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">new</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">new</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">new</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">new</span><span class="p">));</span>
 </span></span><span class="line"><span class="cl">	<span class="n">new</span><span class="p">.</span><span class="n">age</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">ac</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="n">pid</span> <span class="o">=</span> <span class="n">getpid</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">		<span class="n">pid</span> <span class="o">=</span> <span class="nf">getpid</span><span class="p">();</span>
 </span></span><span class="line"><span class="cl">	<span class="k">else</span>
-</span></span><span class="line"><span class="cl">		<span class="n">pid</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">av</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">		<span class="n">pid</span> <span class="o">=</span> <span class="nf">atoi</span><span class="p">(</span><span class="n">av</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
 </span></span><span class="line"><span class="cl">	
-</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">syscall</span><span class="p">(</span><span class="mi">335</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">new</span><span class="p">,</span> <span class="n">pid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="nf">syscall</span><span class="p">(</span><span class="mi">335</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">new</span><span class="p">,</span> <span class="n">pid</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="n">printf</span><span class="p">(</span><span class="s">&#34;syscall failed...</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">		<span class="n">perror</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">printf</span><span class="p">(</span><span class="s">&#34;syscall failed...</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">perror</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
 </span></span><span class="line"><span class="cl">	
-</span></span><span class="line"><span class="cl">	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;Printing struct info_pid...</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Printing struct info_pid...</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;PID       : %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">pid</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Name      : %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">name</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;State     : %ld</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">state</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Stack     : %p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">stack</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Birthtime : %ld</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">age</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">printf</span><span class="p">(</span><span class="s">&#34;PID       : %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">pid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Name      : %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;State     : %ld</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">state</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Stack     : %p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">stack</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Birthtime : %ld</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">age</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">        
 </span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">255</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="p">{</span>
 </span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">new</span><span class="p">.</span><span class="n">child</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
 </span></span><span class="line"><span class="cl">            <span class="k">break</span> <span class="p">;</span>
-</span></span><span class="line"><span class="cl">        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\t</span><span class="s">Child %d  : %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">child</span><span class="p">[</span><span class="n">j</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\t</span><span class="s">Child %d  : %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">child</span><span class="p">[</span><span class="n">j</span><span class="p">]);</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl">	
-</span></span><span class="line"><span class="cl">	<span class="n">print_parents</span><span class="p">(</span><span class="n">new</span><span class="p">.</span><span class="n">ppid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">print_parents</span><span class="p">(</span><span class="n">new</span><span class="p">.</span><span class="n">ppid</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;Root      : %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">root</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;PWD       : %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">pwd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Root      : %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">root</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;PWD       : %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">new</span><span class="p">.</span><span class="n">pwd</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	
 </span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">EXIT_SUCCESS</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
@@ -517,7 +516,7 @@ PWD       : /
     </div>
 
     <div class="post-info-more">
-        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel/">kernel</a>,&nbsp;<a href="/tags/syscall/">syscall</a>,&nbsp;<a href="/tags/development/">development</a>,&nbsp;<a href="/tags/linux/">linux</a></section>
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel/">Kernel</a>,&nbsp;<a href="/tags/syscall/">Syscall</a>,&nbsp;<a href="/tags/development/">Development</a>,&nbsp;<a href="/tags/linux/">Linux</a></section>
         <section>
             <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
         </section>
@@ -528,7 +527,7 @@ PWD       : /
 </div>
 </article></div>
             </main><footer class="footer">
-        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://ech0.re" target="_blank">Ech0</a></span>&nbsp;|&nbsp;<span class="license">me@ech0.re | <a href='/privacy/'>Privacy</a></span></div>
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022 - 2024</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://ech0.re" target="_blank">Ech0</a></span>&nbsp;|&nbsp;<span class="license">me@ech0.re | <a href='/privacy/'>Privacy</a></span></div>
         </div>
     </footer></div>
 
@@ -537,5 +536,5 @@ PWD       : /
             </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
                 <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
             </a>
-        </div><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+        </div><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
 </html>

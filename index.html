@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-	<meta name="generator" content="Hugo 0.99.1" />
+	<meta name="generator" content="Hugo 0.123.7">
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noodp" />
@@ -10,9 +10,9 @@
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://ech0.re/" /><meta property="og:site_name" content="Ech0.re" />
 
-<meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Ech0 Security Blog"/>
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Ech0 Security Blog"/>
 <meta name="twitter:description" content="Security blog"/>
+<meta name="twitter:site" content="@ech0fr"/>
 <meta name="application-name" content="Ech0.re">
 <meta name="apple-mobile-web-app-title" content="Ech0.re"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -39,8 +39,7 @@
         <div class="menu">
             <div class="menu-inner"><a class="menu-item" href="/posts/"> Posts </a><a class="menu-item" href="/tags/"> Tags </a><a class="menu-item" href="/categories/"> Categories </a><a class="menu-item" href="/about/"> About </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
                     <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
-                </a>
-            </div>
+                </a></div>
         </div>
     </div>
 </header><header class="mobile" id="header-mobile">
@@ -67,47 +66,41 @@
         alt="profile.jpg"
         title="profile.jpg" /></a></div><h1 class="home-title">Ech0</h1><div class="home-subtitle"><div id="id-1" class="typeit"></div></div><div class="links"><a href="https://twitter.com/ech0fr" title="Twitter" target="_blank" rel="noopener noreffer me"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a></div></div>
 <article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
-        <a href="/posts/active-x-exploitation/">Write-up: ActiveX controller exploitation</a>
-    </h1><div class="post-meta"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-publish">published on <time datetime="2022-05-29">2022-05-29</time></span>&nbsp;<span class="post-category">included in <a href="/categories/writeup/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Writeup</a></span></div><div class="content">1. Introduction Warning  This post is intended for intermediate or experienced people, as I will not explain the basics of reverse engineering or exploitation.   This is probably the longest write-up you&rsquo;ll see on this blog. The reason is simple: I will show you the whole processus of vulnerability research, to full exploitation of a Windows OCX Controller, including failing paths (that are very interesting).
-I will go from a simple CVE number, with no existing public exploit and not much information on the internet, to finding the vulnerability and exploiting it to run arbitrary code on the operating system.</div><div class="post-footer">
-        <a href="/posts/active-x-exploitation/">Read More</a><div class="post-tags">
-                <i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/windows/">windows</a>,&nbsp;<a href="/tags/exploit/">exploit</a>,&nbsp;<a href="/tags/write-up/">write-up</a>,&nbsp;<a href="/tags/cve/">cve</a></div></div>
-</article><article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
         <a href="/posts/how-to-start/">How to start in cybersecurity</a>
     </h1><div class="post-meta"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-publish">published on <time datetime="2022-05-27">2022-05-27</time></span>&nbsp;<span class="post-category">included in <a href="/categories/misc/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Misc</a></span></div><div class="content">Every person in this community was once a begginer and it&rsquo;s usually a hard domain to begin with if you&rsquo;re not guided.
 I will try to guide you through this article and give you some tips to start your cybersecurity journey.
 This article is for beginners.
 1. The mindset First of all, before even talking about how to begin and where, you should answer this question: why?
 Typically:
- Why do you want to learn cybersecurity?</div><div class="post-footer">
+Why do you want to learn cybersecurity?</div><div class="post-footer">
         <a href="/posts/how-to-start/">Read More</a><div class="post-tags">
-                <i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/misc/">misc</a>,&nbsp;<a href="/tags/e-learning/">e-learning</a>,&nbsp;<a href="/tags/tips/">tips</a>,&nbsp;<a href="/tags/non-technical/">non-technical</a></div></div>
+                <i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/misc/">Misc</a>,&nbsp;<a href="/tags/e-learning/">E-Learning</a>,&nbsp;<a href="/tags/tips/">Tips</a>,&nbsp;<a href="/tags/non-technical/">Non-Technical</a></div></div>
 </article><article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
         <a href="/posts/packing-resources/">Packing: Dropping from resources</a>
-    </h1><div class="post-meta"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-publish">published on <time datetime="2022-04-15">2022-04-15</time></span>&nbsp;<span class="post-category">included in <a href="/categories/packer/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Packer</a></span></div><div class="content">Warning  The knowledge acquired in this article is for strictly educational purposes.
+    </h1><div class="post-meta"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-publish">published on <time datetime="2022-04-15">2022-04-15</time></span>&nbsp;<span class="post-category">included in <a href="/categories/packer/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Packer</a></span></div><div class="content">Warning The knowledge acquired in this article is for strictly educational purposes.
 You are not allowed to use tools or techniques for malicious purposes: it is immoral and illegal.
 If you&rsquo;re not sure what you&rsquo;re doing, don&rsquo;t.
 I cannot be held responsible for any misuse you may make of this knowledge.
-   In this new series of articles &ldquo;packing&rdquo;, I will present to you various key technical points used by packers.</div><div class="post-footer">
+In this new series of articles &ldquo;packing&rdquo;, I will present to you various key technical points used by packers.</div><div class="post-footer">
         <a href="/posts/packing-resources/">Read More</a><div class="post-tags">
-                <i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/packing/">packing</a>,&nbsp;<a href="/tags/dropper/">dropper</a>,&nbsp;<a href="/tags/malware/">malware</a>,&nbsp;<a href="/tags/windows/">windows</a></div></div>
+                <i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/packing/">Packing</a>,&nbsp;<a href="/tags/dropper/">Dropper</a>,&nbsp;<a href="/tags/malware/">Malware</a>,&nbsp;<a href="/tags/windows/">Windows</a></div></div>
 </article><article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
         <a href="/posts/kernel-module-development/">Kernel: Module development</a>
-    </h1><div class="post-meta"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-publish">published on <time datetime="2022-04-05">2022-04-05</time></span>&nbsp;<span class="post-category">included in <a href="/categories/linux-kernel/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Linux kernel</a></span></div><div class="content">We have seen previously how to develop and integrate a system call into the Linux kernel. Now we are going to look at another form of code execution in ring 0 (kernel-land): the Linux module system.
-Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both in terms of how it works and how to integrate/test it. There are plenty of new concepts to learn here and no redundancy with the article on system calls.</div><div class="post-footer">
+    </h1><div class="post-meta"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-publish">published on <time datetime="2022-04-05">2022-04-05</time></span>&nbsp;<span class="post-category">included in <a href="/categories/linux-kernel/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Linux Kernel</a></span></div><div class="content">We have seen previously how to develop and integrate a system call into the Linux kernel. Now we are going to look at another form of code execution in ring 0 (kernel-land): the Linux module system.
+Note Don&rsquo;t worry: it&rsquo;s totally different from a system call, both in terms of how it works and how to integrate/test it. There are plenty of new concepts to learn here and no redundancy with the article on system calls.</div><div class="post-footer">
         <a href="/posts/kernel-module-development/">Read More</a><div class="post-tags">
-                <i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel/">kernel</a>,&nbsp;<a href="/tags/syscall/">syscall</a>,&nbsp;<a href="/tags/development/">development</a>,&nbsp;<a href="/tags/linux/">linux</a></div></div>
+                <i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel/">Kernel</a>,&nbsp;<a href="/tags/syscall/">Syscall</a>,&nbsp;<a href="/tags/development/">Development</a>,&nbsp;<a href="/tags/linux/">Linux</a></div></div>
 </article><article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
         <a href="/posts/kernel-syscall-development/">Kernel: System call development</a>
-    </h1><div class="post-meta"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-publish">published on <time datetime="2022-03-25">2022-03-25</time></span>&nbsp;<span class="post-category">included in <a href="/categories/linux-kernel/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Linux kernel</a></span></div><div class="content">In this article we will see how to:
- Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land  In other terms: we will add our own syscall to the Linux kernel.
+    </h1><div class="post-meta"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-publish">published on <time datetime="2022-03-25">2022-03-25</time></span>&nbsp;<span class="post-category">included in <a href="/categories/linux-kernel/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Linux Kernel</a></span></div><div class="content">In this article we will see how to:
+Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land In other terms: we will add our own syscall to the Linux kernel.
 1. Prerequisites If you want to follow the development and test by yourself, there are a few prerequisites.
- Operating system running on a relatively recent Linux kernel.</div><div class="post-footer">
+Operating system running on a relatively recent Linux kernel. Usual development tools (gcc, make, &hellip;) A text editor (vim, VSCode, &hellip;) Warning In order to test the system call we will recompile the current Linux kernel and boot on it.</div><div class="post-footer">
         <a href="/posts/kernel-syscall-development/">Read More</a><div class="post-tags">
-                <i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel/">kernel</a>,&nbsp;<a href="/tags/syscall/">syscall</a>,&nbsp;<a href="/tags/development/">development</a>,&nbsp;<a href="/tags/linux/">linux</a></div></div>
+                <i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/kernel/">Kernel</a>,&nbsp;<a href="/tags/syscall/">Syscall</a>,&nbsp;<a href="/tags/development/">Development</a>,&nbsp;<a href="/tags/linux/">Linux</a></div></div>
 </article></div></div>
             </main><footer class="footer">
-        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://ech0.re" target="_blank">Ech0</a></span>&nbsp;|&nbsp;<span class="license">me@ech0.re | <a href='/privacy/'>Privacy</a></span></div>
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022 - 2024</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://ech0.re" target="_blank">Ech0</a></span>&nbsp;|&nbsp;<span class="license">me@ech0.re | <a href='/privacy/'>Privacy</a></span></div>
         </div>
     </footer></div>
 
@@ -116,5 +109,5 @@ Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both i
             </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
                 <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
             </a>
-        </div><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/typeit@8.5.4/dist/index.umd.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"data":{"id-1":"Security Researcher"},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"id-1":["id-1"]},"duration":-1,"speed":100}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+        </div><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/typeit@8.6.0/dist/index.umd.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"data":{"id-1":"Security Researcher"},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"id-1":["id-1"]},"duration":-1,"speed":100}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
 </html>

@@ -4,40 +4,8 @@
         <link>https://ech0.re/tags/</link>
         <description>Tags - Tag - Ech0 Security Blog</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>me@ech0.re (Ech0)</managingEditor>
-            <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Sun, 29 May 2022 03:22:29 &#43;0200</lastBuildDate><atom:link href="https://ech0.re/tags/" rel="self" type="application/rss+xml" /><item>
-    <title>cve</title>
-    <link>https://ech0.re/tags/cve/</link>
-    <pubDate>Sun, 29 May 2022 03:22:29 &#43;0200</pubDate>
-    <author>Ech0</author>
-    <guid>https://ech0.re/tags/cve/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>exploit</title>
-    <link>https://ech0.re/tags/exploit/</link>
-    <pubDate>Sun, 29 May 2022 03:22:29 &#43;0200</pubDate>
-    <author>Ech0</author>
-    <guid>https://ech0.re/tags/exploit/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>windows</title>
-    <link>https://ech0.re/tags/windows/</link>
-    <pubDate>Sun, 29 May 2022 03:22:29 &#43;0200</pubDate>
-    <author>Ech0</author>
-    <guid>https://ech0.re/tags/windows/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>write-up</title>
-    <link>https://ech0.re/tags/write-up/</link>
-    <pubDate>Sun, 29 May 2022 03:22:29 &#43;0200</pubDate>
-    <author>Ech0</author>
-    <guid>https://ech0.re/tags/write-up/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>e-learning</title>
+            <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Fri, 27 May 2022 20:53:00 &#43;0200</lastBuildDate><atom:link href="https://ech0.re/tags/" rel="self" type="application/rss+xml" /><item>
+    <title>E-Learning</title>
     <link>https://ech0.re/tags/e-learning/</link>
     <pubDate>Fri, 27 May 2022 20:53:00 &#43;0200</pubDate>
     <author>Ech0</author>
@@ -45,7 +13,7 @@
     <description><![CDATA[]]></description>
 </item>
 <item>
-    <title>misc</title>
+    <title>Misc</title>
     <link>https://ech0.re/tags/misc/</link>
     <pubDate>Fri, 27 May 2022 20:53:00 &#43;0200</pubDate>
     <author>Ech0</author>
@@ -53,7 +21,7 @@
     <description><![CDATA[]]></description>
 </item>
 <item>
-    <title>non-technical</title>
+    <title>Non-Technical</title>
     <link>https://ech0.re/tags/non-technical/</link>
     <pubDate>Fri, 27 May 2022 20:53:00 &#43;0200</pubDate>
     <author>Ech0</author>
@@ -61,7 +29,7 @@
     <description><![CDATA[]]></description>
 </item>
 <item>
-    <title>tips</title>
+    <title>Tips</title>
     <link>https://ech0.re/tags/tips/</link>
     <pubDate>Fri, 27 May 2022 20:53:00 &#43;0200</pubDate>
     <author>Ech0</author>
@@ -69,7 +37,7 @@
     <description><![CDATA[]]></description>
 </item>
 <item>
-    <title>dropper</title>
+    <title>Dropper</title>
     <link>https://ech0.re/tags/dropper/</link>
     <pubDate>Fri, 15 Apr 2022 18:39:15 &#43;0200</pubDate>
     <author>Ech0</author>
@@ -77,11 +45,43 @@
     <description><![CDATA[]]></description>
 </item>
 <item>
-    <title>malware</title>
+    <title>Malware</title>
     <link>https://ech0.re/tags/malware/</link>
     <pubDate>Fri, 15 Apr 2022 18:39:15 &#43;0200</pubDate>
     <author>Ech0</author>
     <guid>https://ech0.re/tags/malware/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Packing</title>
+    <link>https://ech0.re/tags/packing/</link>
+    <pubDate>Fri, 15 Apr 2022 18:39:15 &#43;0200</pubDate>
+    <author>Ech0</author>
+    <guid>https://ech0.re/tags/packing/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Windows</title>
+    <link>https://ech0.re/tags/windows/</link>
+    <pubDate>Fri, 15 Apr 2022 18:39:15 &#43;0200</pubDate>
+    <author>Ech0</author>
+    <guid>https://ech0.re/tags/windows/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Development</title>
+    <link>https://ech0.re/tags/development/</link>
+    <pubDate>Tue, 05 Apr 2022 11:31:15 &#43;0200</pubDate>
+    <author>Ech0</author>
+    <guid>https://ech0.re/tags/development/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Kernel</title>
+    <link>https://ech0.re/tags/kernel/</link>
+    <pubDate>Tue, 05 Apr 2022 11:31:15 &#43;0200</pubDate>
+    <author>Ech0</author>
+    <guid>https://ech0.re/tags/kernel/</guid>
     <description><![CDATA[]]></description>
 </item>
 </channel>

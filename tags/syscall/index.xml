@@ -1,8 +1,8 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
-        <title>syscall - Tag - Ech0 Security Blog</title>
+        <title>Syscall - Tag - Ech0 Security Blog</title>
         <link>https://ech0.re/tags/syscall/</link>
-        <description>syscall - Tag - Ech0 Security Blog</description>
+        <description>Syscall - Tag - Ech0 Security Blog</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>me@ech0.re (Ech0)</managingEditor>
             <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Tue, 05 Apr 2022 11:31:15 &#43;0200</lastBuildDate><atom:link href="https://ech0.re/tags/syscall/" rel="self" type="application/rss+xml" /><item>
     <title>Kernel: Module development</title>
@@ -11,7 +11,7 @@
     <author>Ech0</author>
     <guid>https://ech0.re/posts/kernel-module-development/</guid>
     <description><![CDATA[We have seen previously how to develop and integrate a system call into the Linux kernel. Now we are going to look at another form of code execution in ring 0 (kernel-land): the Linux module system.
-Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both in terms of how it works and how to integrate/test it. There are plenty of new concepts to learn here and no redundancy with the article on system calls.]]></description>
+Note Don&rsquo;t worry: it&rsquo;s totally different from a system call, both in terms of how it works and how to integrate/test it. There are plenty of new concepts to learn here and no redundancy with the article on system calls.]]></description>
 </item>
 <item>
     <title>Kernel: System call development</title>
@@ -20,9 +20,9 @@ Note  Don&rsquo;t worry: it&rsquo;s totally different from a system call, both i
     <author>Ech0</author>
     <guid>https://ech0.re/posts/kernel-syscall-development/</guid>
     <description><![CDATA[In this article we will see how to:
- Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land  In other terms: we will add our own syscall to the Linux kernel.
+Develop a syscall in C Compile it with the Linux kernel Charge it in the syscalls table Call it from user-land In other terms: we will add our own syscall to the Linux kernel.
 1. Prerequisites If you want to follow the development and test by yourself, there are a few prerequisites.
- Operating system running on a relatively recent Linux kernel.]]></description>
+Operating system running on a relatively recent Linux kernel. Usual development tools (gcc, make, &hellip;) A text editor (vim, VSCode, &hellip;) Warning In order to test the system call we will recompile the current Linux kernel and boot on it.]]></description>
 </item>
 </channel>
 </rss>

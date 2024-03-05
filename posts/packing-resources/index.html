@@ -5,23 +5,23 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noodp" />
         <title>Packing: Dropping from resources - Ech0 Security Blog</title><meta name="Description" content="Security blog"><meta property="og:title" content="Packing: Dropping from resources" />
-<meta property="og:description" content="Warning  The knowledge acquired in this article is for strictly educational purposes.
+<meta property="og:description" content="Warning The knowledge acquired in this article is for strictly educational purposes.
 You are not allowed to use tools or techniques for malicious purposes: it is immoral and illegal.
 If you&rsquo;re not sure what you&rsquo;re doing, don&rsquo;t.
 I cannot be held responsible for any misuse you may make of this knowledge.
-   In this new series of articles &ldquo;packing&rdquo;, I will present to you various key technical points used by packers." />
+In this new series of articles &ldquo;packing&rdquo;, I will present to you various key technical points used by packers." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ech0.re/posts/packing-resources/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-04-15T18:39:15+02:00" />
 <meta property="article:modified_time" content="2022-04-15T18:39:15+02:00" /><meta property="og:site_name" content="Ech0.re" />
 
-<meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Packing: Dropping from resources"/>
-<meta name="twitter:description" content="Warning  The knowledge acquired in this article is for strictly educational purposes.
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Packing: Dropping from resources"/>
+<meta name="twitter:description" content="Warning The knowledge acquired in this article is for strictly educational purposes.
 You are not allowed to use tools or techniques for malicious purposes: it is immoral and illegal.
 If you&rsquo;re not sure what you&rsquo;re doing, don&rsquo;t.
 I cannot be held responsible for any misuse you may make of this knowledge.
-   In this new series of articles &ldquo;packing&rdquo;, I will present to you various key technical points used by packers."/>
+In this new series of articles &ldquo;packing&rdquo;, I will present to you various key technical points used by packers."/>
+<meta name="twitter:site" content="@ech0fr"/>
 <meta name="application-name" content="Ech0.re">
 <meta name="apple-mobile-web-app-title" content="Ech0.re"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -36,7 +36,7 @@ I cannot be held responsible for any misuse you may make of this knowledge.
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https:\/\/ech0.re\/posts\/packing-resources\/"
-        },"genre": "posts","keywords": "packing, dropper, malware, windows","wordcount":  2204 ,
+        },"genre": "posts","keywords": "packing, dropper, malware, windows","wordcount":  2209 ,
         "url": "https:\/\/ech0.re\/posts\/packing-resources\/","datePublished": "2022-04-15T18:39:15+02:00","dateModified": "2022-04-15T18:39:15+02:00","publisher": {
             "@type": "Organization",
             "name": ""},"author": {
@@ -55,8 +55,7 @@ I cannot be held responsible for any misuse you may make of this knowledge.
         <div class="menu">
             <div class="menu-inner"><a class="menu-item" href="/posts/"> Posts </a><a class="menu-item" href="/tags/"> Tags </a><a class="menu-item" href="/categories/"> Categories </a><a class="menu-item" href="/about/"> About </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
                     <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
-                </a>
-            </div>
+                </a></div>
         </div>
     </div>
 </header><header class="mobile" id="header-mobile">
@@ -79,7 +78,7 @@ I cannot be held responsible for any misuse you may make of this knowledge.
             <div class="toc-content always-active" id="toc-content-auto"></div>
         </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Packing: Dropping from resources</h1><div class="post-meta">
             <div class="post-meta-line"><span class="post-author"><a href="https://ech0.re" title="Author" target="_blank" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Ech0</a></span>&nbsp;<span class="post-category">included in <a href="/categories/packer/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Packer</a></span></div>
-            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2022-04-15">2022-04-15</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;2204 words&nbsp;
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2022-04-15">2022-04-15</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;2209 words&nbsp;
                 <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;11 minutes&nbsp;</div>
         </div><div class="details toc" id="toc-static"  data-kept="">
                 <div class="details-summary toc-title">
@@ -115,7 +114,7 @@ I cannot be held responsible for any misuse you may make of this knowledge.
     </div>
 <p>In this new series of articles &ldquo;packing&rdquo;, I will present to you various key technical points used by packers.</p>
 <p>Attention, here I do not intend to explain what a binary packer is, I will let you search on the internet.</p>
-<p>Throughout the series, I&rsquo;ll be talking about <strong>windows packer for PE file formats</strong> but <strong>I&rsquo;ll be compiling on Linux</strong>. Same, I won&rsquo;t explain the PE format in detail in this series: the <a href="https://en.wikipedia.org/wiki/Portable_Executable" target="_blank" rel="noopener noreffer">Wikipedia page</a> is very well done!</p>
+<p>Throughout the series, I&rsquo;ll be talking about <strong>windows packer for PE file formats</strong> but <strong>I&rsquo;ll be compiling on Linux</strong>. Same, I won&rsquo;t explain the PE format in detail in this series: the <a href="https://en.wikipedia.org/wiki/Portable_Executable" target="_blank" rel="noopener noreffer ">Wikipedia page</a> is very well done!</p>
 <p>For this first part, we will talk about compressing binaries in resources and then dropping them in memory from an unpacker.</p>
 <h2 id="1-prerequisites">1. Prerequisites</h2>
 <p>If you want to follow the development and test by yourself, there are a few prerequisites.</p>
@@ -166,7 +165,7 @@ I cannot be held responsible for any misuse you may make of this knowledge.
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
 </span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;Hello !</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Hello !</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	
 </span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
@@ -177,7 +176,7 @@ I cannot be held responsible for any misuse you may make of this knowledge.
 </span></span></code></pre></div><h3 id="42-generating-the-resource-with-windres">4.2. Generating the resource with Windres</h3>
 <p>We will compress this <strong>hidden.exe</strong> binary and store it in resource format so that we can integrate it into a second binary as explained above.</p>
 <p><strong>Compression of the binary</strong></p>
-<p>In the example of this article, we will use <strong>Zlib</strong>&rsquo;s <a href="https://refspecs.linuxbase.org/LSB_3.0.0/LSB-Core-generic/LSB-Core-generic/zlib-compress2-1.html" target="_blank" rel="noopener noreffer">compress2()</a> function to compress our binary.</p>
+<p>In the example of this article, we will use <strong>Zlib</strong>&rsquo;s <a href="https://refspecs.linuxbase.org/LSB_3.0.0/LSB-Core-generic/LSB-Core-generic/zlib-compress2-1.html" target="_blank" rel="noopener noreffer ">compress2()</a> function to compress our binary.</p>
 <p>Without further ado, here is the C code.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;zlib.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
@@ -188,29 +187,29 @@ I cannot be held responsible for any misuse you may make of this knowledge.
 </span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">ac</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">av</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="p">{</span>
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">ac</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="n">printf</span><span class="p">(</span><span class="s">&#34;Usage: %s &lt;src_file&gt; &lt;size_of_file&gt;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">av</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Usage: %s &lt;src_file&gt; &lt;size_of_file&gt;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">av</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="cm">/* input */</span>
 </span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">*</span><span class="n">clear_filename</span> <span class="o">=</span> <span class="n">av</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
-</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">src_size</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">av</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
-</span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">*</span><span class="n">clear</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="n">src_size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">src_size</span> <span class="o">=</span> <span class="nf">atoi</span><span class="p">(</span><span class="n">av</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">*</span><span class="n">clear</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="nf">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="n">src_size</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="cm">/* output */</span>
-</span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">*</span><span class="n">compressed</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="n">src_size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">*</span><span class="n">compressed</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="nf">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="n">src_size</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="n">uLongf</span> <span class="n">dst_size</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="cm">/* reading and compression */</span>
-</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">fd_rd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">clear_filename</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">read</span><span class="p">(</span><span class="n">fd_rd</span><span class="p">,</span> <span class="n">clear</span><span class="p">,</span> <span class="n">src_size</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">close</span><span class="p">(</span><span class="n">fd_rd</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">compress2</span><span class="p">((</span><span class="n">Bytef</span> <span class="o">*</span><span class="p">)</span><span class="n">compressed</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dst_size</span><span class="p">,</span> <span class="p">(</span><span class="n">Bytef</span> <span class="o">*</span><span class="p">)</span><span class="n">clear</span><span class="p">,</span> <span class="p">(</span><span class="n">uLong</span><span class="p">)</span><span class="n">src_size</span><span class="p">,</span> <span class="mi">9</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">fd_rd</span> <span class="o">=</span> <span class="nf">open</span><span class="p">(</span><span class="n">clear_filename</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">read</span><span class="p">(</span><span class="n">fd_rd</span><span class="p">,</span> <span class="n">clear</span><span class="p">,</span> <span class="n">src_size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">close</span><span class="p">(</span><span class="n">fd_rd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">compress2</span><span class="p">((</span><span class="n">Bytef</span> <span class="o">*</span><span class="p">)</span><span class="n">compressed</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dst_size</span><span class="p">,</span> <span class="p">(</span><span class="n">Bytef</span> <span class="o">*</span><span class="p">)</span><span class="n">clear</span><span class="p">,</span> <span class="p">(</span><span class="n">uLong</span><span class="p">)</span><span class="n">src_size</span><span class="p">,</span> <span class="mi">9</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="cm">/* writing */</span>
-</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">fd_wr</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">&#34;compressed_binary&#34;</span><span class="p">,</span> <span class="n">O_WRONLY</span> <span class="o">|</span> <span class="n">O_CREAT</span><span class="p">,</span> <span class="mo">0444</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">write</span><span class="p">(</span><span class="n">fd_wr</span><span class="p">,</span> <span class="n">compressed</span><span class="p">,</span> <span class="n">dst_size</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">close</span><span class="p">(</span><span class="n">fd_wr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">fd_wr</span> <span class="o">=</span> <span class="nf">open</span><span class="p">(</span><span class="s">&#34;compressed_binary&#34;</span><span class="p">,</span> <span class="n">O_WRONLY</span> <span class="o">|</span> <span class="n">O_CREAT</span><span class="p">,</span> <span class="mo">0444</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">write</span><span class="p">(</span><span class="n">fd_wr</span><span class="p">,</span> <span class="n">compressed</span><span class="p">,</span> <span class="n">dst_size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">close</span><span class="p">(</span><span class="n">fd_wr</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">EXIT_SUCCESS</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
@@ -298,8 +297,7 @@ I cannot be held responsible for any misuse you may make of this knowledge.
 <li><strong>IDR_RCDATA0</strong>: resource name</li>
 <li><strong>RCDATA</strong>: resource type (here, data)</li>
 <li><strong>compressed_binary</strong>: name of the file to include as a resource</li>
-</ul>
-</div>
+</ul></div>
         </div>
     </div>
 <p>There you go, all that remains is to call Windres to generate the object file to include as a resource.</p>
@@ -321,7 +319,7 @@ I cannot be held responsible for any misuse you may make of this knowledge.
 <h3 id="43-writing-the-mini-unpacker">4.3. Writing the mini unpacker</h3>
 <p>This time, just like for <strong>hidden.exe</strong>, we are talking about code that is supposed to run on a <strong>Windows environment</strong>, so we will compile a <strong>PE32+</strong> object.</p>
 <p><strong>Finding and extracting the resource</strong></p>
-<p>We will use the functions of the <strong>Windows API</strong>: <a href="https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-findresourcea" target="_blank" rel="noopener noreffer">FindResourceA</a>, <a href="https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadresource" target="_blank" rel="noopener noreffer">LoadResource</a> and <a href="https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-lockresource" target="_blank" rel="noopener noreffer">LockResource</a>. Exceptionally I will not spend time explaining them, since the <strong>Microsoft documentation is already complete</strong>.</p>
+<p>We will use the functions of the <strong>Windows API</strong>: <a href="https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-findresourcea" target="_blank" rel="noopener noreffer ">FindResourceA</a>, <a href="https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadresource" target="_blank" rel="noopener noreffer ">LoadResource</a> and <a href="https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-lockresource" target="_blank" rel="noopener noreffer ">LockResource</a>. Exceptionally I will not spend time explaining them, since the <strong>Microsoft documentation is already complete</strong>.</p>
 <p>Here is the C code that will retrieve a resource from its own resource section (<code>.rsrc</code>).</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;windows.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
@@ -331,9 +329,9 @@ I cannot be held responsible for any misuse you may make of this knowledge.
 </span></span><span class="line"><span class="cl">	<span class="n">HGLOBAL</span>	<span class="n">hResLoad</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="n">PUCHAR</span>	<span class="n">Data</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="n">hRes</span> <span class="o">=</span> <span class="n">FindResourceA</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;IDR_RCDATA0&#34;</span><span class="p">,</span> <span class="n">RT_RCDATA</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">hResLoad</span> <span class="o">=</span> <span class="n">LoadResource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">hRes</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">Data</span> <span class="o">=</span> <span class="n">LockResource</span><span class="p">(</span><span class="n">hResLoad</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">hRes</span> <span class="o">=</span> <span class="nf">FindResourceA</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;IDR_RCDATA0&#34;</span><span class="p">,</span> <span class="n">RT_RCDATA</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">hResLoad</span> <span class="o">=</span> <span class="nf">LoadResource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">hRes</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Data</span> <span class="o">=</span> <span class="nf">LockResource</span><span class="p">(</span><span class="n">hResLoad</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><p>The code compiles correctly.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">x86_64-w64-mingw32-gcc depacker.c -o depacker.exe
@@ -421,12 +419,12 @@ I cannot be held responsible for any misuse you may make of this knowledge.
 </span></span><span class="line"><span class="cl">	<span class="n">ULONG</span> <span class="n">src_size</span> <span class="o">=</span> <span class="mi">89766</span><span class="p">;</span> <span class="c1">// Hard-coded size of compressed binary
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">ULONG</span> <span class="n">dst_size</span> <span class="o">=</span> <span class="mi">316853</span><span class="p">;</span> <span class="c1">// Hard-coded size of decompressed binary
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>
-</span></span><span class="line"><span class="cl">	<span class="n">hRes</span> <span class="o">=</span> <span class="n">FindResourceA</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;IDR_RCDATA0&#34;</span><span class="p">,</span> <span class="n">RT_RCDATA</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">hResLoad</span> <span class="o">=</span> <span class="n">LoadResource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">hRes</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="n">Data</span> <span class="o">=</span> <span class="n">LockResource</span><span class="p">(</span><span class="n">hResLoad</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">hRes</span> <span class="o">=</span> <span class="nf">FindResourceA</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;IDR_RCDATA0&#34;</span><span class="p">,</span> <span class="n">RT_RCDATA</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">hResLoad</span> <span class="o">=</span> <span class="nf">LoadResource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">hRes</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Data</span> <span class="o">=</span> <span class="nf">LockResource</span><span class="p">(</span><span class="n">hResLoad</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="n">uncompressed</span> <span class="o">=</span> <span class="p">(</span><span class="n">PUCHAR</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">dst_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">));</span>
-</span></span><span class="line"><span class="cl">	<span class="n">uncompress</span><span class="p">(</span><span class="n">uncompressed</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dst_size</span><span class="p">,</span> <span class="n">Data</span><span class="p">,</span> <span class="n">src_size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">uncompressed</span> <span class="o">=</span> <span class="p">(</span><span class="n">PUCHAR</span><span class="p">)</span><span class="nf">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">dst_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">uncompress</span><span class="p">(</span><span class="n">uncompressed</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dst_size</span><span class="p">,</span> <span class="n">Data</span><span class="p">,</span> <span class="n">src_size</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><p>The principle of the <code>uncompress()</code> function is exactly the same at the prototype level as for the <code>compress2()</code> function initially used.</p>
 <p>We compile to check. We obviously do not forget to specify the location of our <strong>zlib</strong> library (<code>-L</code>) and to reference it (<code>-lz</code>), as well as the header files (<code>-I</code>)</p>
@@ -469,7 +467,7 @@ I cannot be held responsible for any misuse you may make of this knowledge.
     </div>
 
     <div class="post-info-more">
-        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/packing/">packing</a>,&nbsp;<a href="/tags/dropper/">dropper</a>,&nbsp;<a href="/tags/malware/">malware</a>,&nbsp;<a href="/tags/windows/">windows</a></section>
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/packing/">Packing</a>,&nbsp;<a href="/tags/dropper/">Dropper</a>,&nbsp;<a href="/tags/malware/">Malware</a>,&nbsp;<a href="/tags/windows/">Windows</a></section>
         <section>
             <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
         </section>
@@ -480,7 +478,7 @@ I cannot be held responsible for any misuse you may make of this knowledge.
 </div>
 </article></div>
             </main><footer class="footer">
-        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://ech0.re" target="_blank">Ech0</a></span>&nbsp;|&nbsp;<span class="license">me@ech0.re | <a href='/privacy/'>Privacy</a></span></div>
+        <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022 - 2024</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://ech0.re" target="_blank">Ech0</a></span>&nbsp;|&nbsp;<span class="license">me@ech0.re | <a href='/privacy/'>Privacy</a></span></div>
         </div>
     </footer></div>
 
@@ -489,5 +487,5 @@ I cannot be held responsible for any misuse you may make of this knowledge.
             </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
                 <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
             </a>
-        </div><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.1/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+        </div><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
 </html>
