@@ -4,7 +4,16 @@
         <link>https://ech0.re/posts/</link>
         <description>All Posts | Ech0 Security Blog</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>me@ech0.re (Ech0)</managingEditor>
-            <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Sun, 29 May 2022 03:22:29 &#43;0200</lastBuildDate><atom:link href="https://ech0.re/posts/" rel="self" type="application/rss+xml" /><item>
+            <webMaster>me@ech0.re (Ech0)</webMaster><lastBuildDate>Sat, 09 Mar 2024 07:35:06 &#43;0000</lastBuildDate><atom:link href="https://ech0.re/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>Write-up: ActiveX controller exploitation</title>
+    <link>https://ech0.re/posts/active-x-exploitation/</link>
+    <pubDate>Sun, 29 May 2022 03:22:29 &#43;0200</pubDate>
+    <author>Ech0</author>
+    <guid>https://ech0.re/posts/active-x-exploitation/</guid>
+    <description><![CDATA[1. Introduction Warning This post is intended for intermediate or experienced people, as I will not explain the basics of reverse engineering or exploitation. This is probably the longest write-up you&rsquo;ll see on this blog. The reason is simple: I will show you the whole processus of vulnerability research, to full exploitation of a Windows OCX Controller, including failing paths (that are very interesting).
+I will go from a simple CVE number, with no existing public exploit and not much information on the internet, to finding the vulnerability and exploiting it to run arbitrary code on the operating system.]]></description>
+</item>
+<item>
     <title>How to start in cybersecurity</title>
     <link>https://ech0.re/posts/how-to-start/</link>
     <pubDate>Fri, 27 May 2022 20:53:00 &#43;0200</pubDate>

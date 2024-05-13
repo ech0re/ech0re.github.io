@@ -10,7 +10,7 @@
     <pubDate>Sun, 29 May 2022 03:22:29 &#43;0200</pubDate>
     <author>Ech0</author>
     <guid>https://ech0.re/posts/active-x-exploitation/</guid>
-    <description><![CDATA[1. Introduction Warning  This post is intended for intermediate or experienced people, as I will not explain the basics of reverse engineering or exploitation.   This is probably the longest write-up you&rsquo;ll see on this blog. The reason is simple: I will show you the whole processus of vulnerability research, to full exploitation of a Windows OCX Controller, including failing paths (that are very interesting).
+    <description><![CDATA[1. Introduction Warning This post is intended for intermediate or experienced people, as I will not explain the basics of reverse engineering or exploitation. This is probably the longest write-up you&rsquo;ll see on this blog. The reason is simple: I will show you the whole processus of vulnerability research, to full exploitation of a Windows OCX Controller, including failing paths (that are very interesting).
 I will go from a simple CVE number, with no existing public exploit and not much information on the internet, to finding the vulnerability and exploiting it to run arbitrary code on the operating system.]]></description>
 </item>
 </channel>
